@@ -17,7 +17,7 @@ Example uses include game collections, quests and achievements, inventory, recip
 - Tentative: A possible capability whose inclusion remains undecided.
 - Open: A question requiring a decision.
 
-Confirmation does not assign a requirement to the first release. Release scope will be defined separately.
+Confirmation establishes an agreed product requirement, not necessarily a V1 deliverable. Section 15 identifies the confirmed V1 scope. Requirements outside V1 remain part of the product direction unless explicitly revised.
 
 ## 1. Workbenches and Organization
 
@@ -29,6 +29,9 @@ Confirmation does not assign a requirement to the first release. Release scope w
 - ORG-04: Data is reusable throughout its workbench.
 - ORG-05: Workbenches are isolated. References, formulas, and dashboards cannot access data in another workbench.
 - ORG-06: Moving content within a workbench preserves its references and relationships.
+- ORG-07: Users can rename, duplicate, and delete datasets.
+- ORG-08: Users can create, rename, move, and delete folders and other supported workbench items.
+- ORG-09: The explorer supports drag-and-drop organization.
 
 ## 2. Application Experience
 
@@ -42,7 +45,7 @@ Confirmation does not assign a requirement to the first release. Release scope w
 - APP-06: Users can move tabs between groups and resize groups.
 - APP-07: Data edits save automatically.
 - APP-08: Reopening a workbench restores its open tabs and layout.
-- APP-09: Global search covers accessible content in the active workbench.
+- APP-09: Global search covers locally available workbenches.
 - APP-10: Scoped search limits results to a selected context, such as a folder, dataset, or current view.
 - APP-11: The active search scope is clearly displayed.
 - APP-12: Workbench supports Windows, macOS, and Linux.
@@ -79,6 +82,16 @@ Confirmation does not assign a requirement to the first release. Release scope w
 - APP-45: The next completed edit removes the oversized action from undo/redo history. Other users' synchronized edits still enforce the existing workbench-wide boundary.
 - APP-46: Undoing or redoing an oversized action does not expire its temporary storage exception. It remains available for undo/redo until the next completed new edit or an applicable synchronization boundary.
 - APP-47: Retaining an oversized action clears older undo/redo history, leaving the oversized action as the sole retained entry.
+- APP-48: Opening another item in a tab or split group is the normal multitasking workflow. Opening a separate application window requires an explicit Open New Window command.
+- APP-49: Workbench restores the previous windows and each window's tabs and pane layout when reopened.
+- APP-50: Global search can search item names and record field values across all locally available workbenches, including while offline.
+- APP-51: Global search results can be filtered by dataset and field type and opened directly.
+- APP-52: Workbench supports light mode, dark mode, follow-system appearance, adjustable interface scale, and accent-color selection.
+- APP-53: Application styling uses a centralized design-token system.
+- APP-54: Workbench provides built-in update checks and downloads. Users choose when to install updates.
+- APP-55: Updates preserve local data, handle migrations safely, and do not interrupt an active work session.
+- APP-56: Workbench supports keyboard navigation throughout the app, visible focus indicators, scalable text, sufficient contrast, accessible labels, and reduced-motion support.
+- APP-57: Spreadsheets, card views, dashboards, and dialogs support screen-reader use.
 
 ### Tentative
 
@@ -129,8 +142,15 @@ Confirmation does not assign a requirement to the first release. Release scope w
 - DATA-30: Paste-conflict resolution offers Keep Existing Formula, Use Incoming Formula when valid, and Cancel.
 - DATA-31: An incoming formula that overrides a column formula is visibly marked as an override.
 - DATA-32: Paste-conflict resolution does not allow replacing an active formula with a static value, including through Paste Values Only.
+- DATA-33: Users can add, rename, reorder, delete, and change the type of fields.
+- DATA-34: Users can add, duplicate, delete, move, and copy records between compatible datasets.
+- DATA-35: Changing a field's type previews conversion issues. Values that cannot be converted are preserved and visibly flagged.
+- DATA-36: Spreadsheet editing supports keyboard navigation and shortcuts, range selection, multi-cell editing, row operations, fill handle, drag-to-fill, and column resizing and reordering.
+- DATA-37: Field-level validation supports number ranges, text-length limits, allowed values, and date limits in addition to required and unique fields.
+- DATA-38: Attachment fields support image previews and display download and synchronization status.
+- DATA-39: Attachments in synchronized workbenches synchronize across devices.
 
-### Proposed Baseline Field Types
+### Confirmed V1 Field Types
 
 - Text
 - Number, with decimal, currency, and percentage formatting
@@ -139,16 +159,17 @@ Confirmation does not assign a requirement to the first release. Release scope w
 - Date and time
 - Single select
 - Multi-select
-
-Single-reference, multi-reference, attachment, and URL fields are confirmed capabilities.
+- Single-reference
+- Multi-reference
+- Attachment
+- URL
 
 ### Open
 
 - Detailed field-type behavior and formatting.
 - Record labels and identification in the interface.
-- Validation options beyond required and unique values.
 - Treatment of empty values in unique fields.
-- Attachment size limits, previews, and offline availability.
+- Attachment size limits and offline availability.
 - Define formula equivalence after reference translation.
 
 ## 4. References
@@ -169,6 +190,9 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 - REF-12: References identify records independently of their displayed values, so changing a display value does not break the link.
 - REF-13: Users can open a referenced record directly from a reference cell to inspect or edit it according to their permissions.
 - REF-14: Multi-reference cells allow users to open each referenced record individually.
+- REF-15: Users can search records when selecting values for a reference field.
+- REF-16: Users can inspect linked-record details without losing their current context.
+- REF-17: Users can see which records reference the current record.
 
 ### Tentative
 
@@ -176,7 +200,7 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 
 ### Open
 
-- How users select and inspect referenced records.
+- Detailed reference picker and inspection interactions.
 - How dependency information is presented before deletion.
 
 ## 5. Formulas and Calculations
@@ -197,11 +221,13 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 - CALC-12: Formulas depending on invalid input values display an explanatory error instead of a calculated result.
 - CALC-13: Dependency errors propagate to downstream formula cells.
 - CALC-14: Restoring a referenced record triggers recalculation and clears errors where their cause has been resolved.
+- CALC-15: V1 formulas support arithmetic, comparisons, text joining, conditional logic, and common aggregate functions.
+- CALC-16: V1 formulas support date/time functions, text manipulation, rounding, and null/error handling.
+- CALC-17: Formulas can aggregate values across multi-reference fields.
 
 ### Open
 
-- Formula syntax, addressing, and supported functions.
-- Calculations involving multi-reference fields.
+- Formula syntax, addressing, and exact function catalog.
 - Circular dependency behavior.
 - Details of retained dependency data after deletion.
 - Formula behavior after structural changes.
@@ -217,10 +243,15 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 - VIEW-05: Views support grouping records by a field.
 - VIEW-06: Groups support summaries such as counts, totals, and averages.
 - VIEW-07: Grouping and summary settings are saved with the view.
+- VIEW-08: V1 supports spreadsheet views and card views.
+- VIEW-09: Spreadsheet views save column order, widths, and per-view formatting in addition to their existing settings.
+- VIEW-10: Card views allow users to choose a card title, image, and displayed fields.
+- VIEW-11: Card views support filtering, sorting, and grouping.
+- VIEW-12: Opening a card provides access to the underlying record's details for editing.
 
 ### Open
 
-- Additional view types.
+- Additional view types beyond spreadsheet and cards.
 - Nested grouping.
 - How summaries represent invalid or stale calculated values.
 
@@ -237,6 +268,7 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 - DASH-07: Users can define shared dashboard filters and choose which widgets they affect.
 - DASH-08: Widget filters combine with applicable shared filters.
 - DASH-09: Widgets can operate independently of shared filters.
+- DASH-10: Users can click through from dashboard widgets to inspect the underlying records.
 
 ### Open
 
@@ -262,6 +294,10 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 - SYNC-12: Deleting server content and revoking shared access are separate, explicit actions.
 - SYNC-13: Enabling or resuming synchronization applies the same merge rules to local and server changes.
 - SYNC-14: Conflicts with ambiguous edit ordering, deletions, or incompatible structural changes require user resolution when they cannot be merged safely.
+- SYNC-15: V1 synchronization supports one user's workbenches across multiple computers. Multi-user collaboration is deferred, but synchronization must be designed to accommodate it.
+- SYNC-16: Users can review and resolve conflicts that cannot be merged safely.
+- SYNC-17: Signing out stops synchronization but preserves access to locally downloaded workbenches.
+- SYNC-18: Removing local workbench data from a device is a separate, explicit action that warns about unsynchronized changes.
 
 ### Open
 
@@ -321,6 +357,10 @@ Single-reference, multi-reference, attachment, and URL fields are confirmed capa
 
 Recovery snapshots restore workbench state. They are distinct from view-only snapshots created for sharing.
 
+### Release Scope
+
+Recovery snapshots are confirmed future capabilities, not V1 deliverables. V1 includes autosave, persistent undo/redo, trash, and recovery of values displaced by sync conflicts. Storage and change tracking must allow recovery snapshots to be added later.
+
 ### Confirmed
 
 - HIST-01: Recovery snapshots cover the entire workbench.
@@ -362,10 +402,12 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 - TRASH-09: Confirmation explains that items will no longer be recoverable through trash.
 - TRASH-10: Items are permanently removed from trash after retention expires.
 - TRASH-11: Removing items from trash does not rewrite existing snapshots.
+- TRASH-12: Users can configure trash retention.
+- TRASH-13: Users can disable automatic permanent deletion from trash.
+- TRASH-14: Deletion and restoration of synchronized items propagate across devices.
 
 ### Open
 
-- Whether retention is configurable.
 - Which item types have independent trash entries.
 - How retention expiry is processed across offline devices.
 
@@ -378,8 +420,8 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 - AUTO-03: Automations support event-based and scheduled triggers.
 - AUTO-04: Schedules support specified times and recurring intervals.
 - AUTO-05: Due automations execute while the application is running.
-- AUTO-06: If a scheduled time passes while the app is closed, the automation runs the first time it opens afterward.
-- AUTO-07: Multiple missed occurrences produce one catch-up run, after which the normal schedule resumes.
+- AUTO-06: Each scheduled automation has a configurable missed-run policy: skip missed runs, run once when Workbench reopens, or catch up on every missed occurrence.
+- AUTO-07: Catch-up execution is subject to safeguards against excessive or duplicate runs.
 - AUTO-08: Automations operate within their workbench and respect permissions.
 
 ### Tentative
@@ -389,7 +431,7 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 
 ### Open
 
-- Initial triggers, conditions, and actions.
+- Exact V1 trigger, condition, and action catalog.
 - Duplicate-run prevention across devices and collaborators.
 - Failure reporting, retries, and loop prevention.
 - Whether a workbench must be open for its automations to execute.
@@ -408,6 +450,10 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 - IO-07: Import name conflicts require a user choice before applying the affected import.
 - IO-08: Native exports include attachment files by default. Selected-content exports include only attachments used by the exported content.
 - IO-09: Users can exclude attachment files from a native export, with a clear indication that the export will not contain those files.
+- IO-10: V1 supports importing CSV and Excel files into datasets.
+- IO-11: V1 supports exporting datasets and saved views to CSV and Excel.
+- IO-12: V1 supports exporting views and dashboards to PDF.
+- IO-13: A complete native workbench export is usable independently of cloud synchronization.
 
 ### Tentative
 
@@ -437,6 +483,8 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 - RECORD-03: Comments identify their author and creation time.
 - RECORD-04: Threaded replies are a desired capability; release timing remains undecided.
 - RECORD-05: @mentions are a desired capability; release timing remains undecided.
+- RECORD-06: V1 records support rich-text notes.
+- RECORD-07: V1 record details display and allow editing of all fields, including fields hidden in the current view.
 
 ### Proposed
 
@@ -446,22 +494,62 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 
 - Mention notifications.
 - Comment editing, deletion, and permissions.
-- Notes formatting.
+- Exact rich-text formatting and editing capabilities.
 
 ## 15. Release Scope and Quality Requirements
 
-No complete first-release feature set has been selected.
+### V1 Definition
 
-Before implementation planning, define:
+V1 is a complete personal data-management application with cross-device synchronization. Users must be able to create a workbench, enter or import data, connect datasets, calculate values, build saved views and dashboards, configure basic automations, and access synchronized workbenches on another computer.
 
-- The primary workflow the first release must support end to end.
-- Required features versus later capabilities.
-- Expected record counts, dataset sizes, and attachment volumes.
-- Performance and responsiveness targets.
-- Accessibility and keyboard-operation requirements.
-- Data durability and recovery expectations.
-- Minimum supported operating-system versions.
-- Technical architecture, storage, and synchronization infrastructure.
+V1 includes the confirmed requirements in Sections 1–8 and 11–14 except where a requirement is explicitly identified as post-V1 or remains an unresolved design detail.
+
+### Confirmed V1 Scope
+
+- Standalone Electron desktop application, built, packaged, and tested for Windows, macOS, and Linux.
+- Independent workbenches, nested folders, flexible explorer, tabs, split panes, and explicitly opened additional windows.
+- Full everyday spreadsheet editing and configurable validation.
+- All confirmed baseline field types, connected references, and expanded formulas.
+- Spreadsheet and configurable card views.
+- Interactive dashboards with shared filters and record click-through.
+- Managed attachments, rich-text record notes, and global search.
+- CSV and Excel import; CSV, Excel, PDF, and native export.
+- Local-first operation, optional accounts, and personal cross-device synchronization with conflict recovery.
+- Basic local automations with configurable missed-run behavior.
+- Autosave, persistent undo/redo, and configurable trash.
+- Comprehensive accessibility and personalized appearance.
+- Built-in application updates with safe data migration.
+
+### Post-V1 Capabilities
+
+- Multi-user sharing, permissions, and collaborative editing.
+- Collaborative comments, threaded replies, and @mentions.
+- Recovery snapshots and arbitrary earlier-state restoration.
+- A mobile companion application.
+- Always-on server-side automation execution, external integrations, and complex workflow orchestration.
+- Additional view types such as Kanban boards and a freeform card-layout designer.
+
+### Quality Requirements
+
+- V1 targets smooth everyday editing, filtering, sorting, and searching with tens of thousands of records per dataset.
+- Search and core data operations must work offline against locally available data.
+- Locally saved changes must survive application restarts.
+- Interrupted synchronization must not silently discard changes.
+- Updates and migrations must preserve local data.
+- Accessibility testing is part of release readiness.
+
+### Remaining Decisions Before Implementation
+
+- Minimum supported operating-system versions and installers.
+- Measurable performance and responsiveness benchmarks.
+- Local storage, synchronization, and account architecture.
+- Reliable edit ordering and detailed conflict-resolution rules.
+- Attachment limits, quotas, and offline availability.
+- Exact formula syntax and function catalog.
+- Automation execution safeguards, retries, and catch-up limits.
+- Initial chart catalog and detailed dashboard behavior.
+- Import mapping, compatibility, and identity-conflict handling.
+- Detailed durability and accessibility acceptance criteria.
 
 ## 16. Validation Workbenches
 
