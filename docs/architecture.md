@@ -75,6 +75,20 @@ SQLite supports transactions, indexed queries, and updates across related data w
 - Database schema and migration strategy.
 - Attachment file layout and recovery procedures.
 - Full-workbench backup and restore format.
+- How the chosen database layout will support search across all locally available workbenches.
+
+### Search Scope
+
+#### Confirmed
+
+- ARCH-22: Global search defaults to the active workbench.
+- ARCH-23: Users can switch global search to All Workbenches to search across all locally available workbenches, including offline.
+- ARCH-24: Search results identify their source workbench and open the matching item or record in the appropriate workbench.
+
+#### Open
+
+- Whether cross-workbench search queries each local database or uses a separate application-level search index.
+- Search indexing, result ranking, and performance strategy.
 
 ## 4. Spreadsheet Grid
 

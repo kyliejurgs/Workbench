@@ -45,7 +45,7 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 - APP-06: Users can move tabs between groups and resize groups.
 - APP-07: Data edits save automatically.
 - APP-08: Reopening a workbench restores its open tabs and layout.
-- APP-09: Global search covers locally available workbenches.
+- APP-09: Global search defaults to the active workbench and searches its locally available content.
 - APP-10: Scoped search limits results to a selected context, such as a folder, dataset, or current view.
 - APP-11: The active search scope is clearly displayed.
 - APP-12: Workbench supports Windows, macOS, and Linux.
@@ -84,8 +84,8 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 - APP-47: Retaining an oversized action clears older undo/redo history, leaving the oversized action as the sole retained entry.
 - APP-48: Opening another item in a tab or split group is the normal multitasking workflow. Opening a separate application window requires an explicit Open New Window command.
 - APP-49: Workbench restores the previous windows and each window's tabs and pane layout when reopened.
-- APP-50: Global search can search item names and record field values across all locally available workbenches, including while offline.
-- APP-51: Global search results can be filtered by dataset and field type and opened directly.
+- APP-50: Users can switch global search to All Workbenches to search item names and record field values across all locally available workbenches, including while offline.
+- APP-51: Global search results identify their source workbench, can be filtered by dataset and field type, and can be opened directly. Opening a result from another workbench opens that workbench and navigates to the matching item or record.
 - APP-52: Workbench supports light mode, dark mode, follow-system appearance, adjustable interface scale, and accent-color selection.
 - APP-53: Application styling uses a centralized design-token system.
 - APP-54: Workbench provides built-in update checks and downloads. Users choose when to install updates.
