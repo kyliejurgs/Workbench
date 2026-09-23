@@ -25,12 +25,12 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 
 - ORG-01: Users can create and name multiple independent workspaces, each called a workbench.
 - ORG-02: Each workbench contains its own datasets, views, dashboards, and other content.
-- ORG-03: Content is organized hierarchically through nested folders.
+- ORG-03: Tables, queries, and dashboards can be organized into optional, non-nesting collections. Each item belongs to at most one collection or remains ungrouped. Files remain in the workbench's central Files area.
 - ORG-04: Data is reusable throughout its workbench.
 - ORG-05: Workbenches are isolated. References, formulas, and dashboards cannot access data in another workbench.
 - ORG-06: Moving content within a workbench preserves its references and relationships.
 - ORG-07: Users can rename, duplicate, and delete datasets.
-- ORG-08: Users can create, rename, move, and delete folders and other supported workbench items.
+- ORG-08: Users can create, rename, and delete collections, and move supported items into, out of, or between collections.
 - ORG-09: The explorer supports drag-and-drop organization.
 
 ## 2. Application Experience
@@ -39,14 +39,14 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 
 - APP-01: Workbench is a standalone, cross-platform application.
 - APP-02: Navigation and layout follow VS Code-style conventions by default, with specific exceptions documented as needed.
-- APP-03: A sidebar explorer displays the active workbench's hierarchy.
+- APP-03: A sidebar explorer displays the active workbench's collections and content.
 - APP-04: Datasets, dashboards, and other content open in tabs.
 - APP-05: Users can split the work area into tab groups to view content side by side.
 - APP-06: Users can move tabs between groups and resize groups.
 - APP-07: Data edits save automatically.
 - APP-08: Reopening a workbench restores its open tabs and layout.
 - APP-09: Global search defaults to the active workbench and searches its locally available content.
-- APP-10: Scoped search limits results to a selected context, such as a folder, dataset, or current view.
+- APP-10: Scoped search limits results to a selected context, such as a collection, dataset, or current view.
 - APP-11: The active search scope is clearly displayed.
 - APP-12: Workbench supports Windows, macOS, and Linux.
 - APP-13: Users can create and use local workbenches without an account.
@@ -62,18 +62,18 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 - APP-25: The record detail panel follows the selected record by default.
 - APP-26: Users can pin the displayed record so the panel remains on it while selection changes elsewhere.
 - APP-27: Unpinning returns the panel to the currently selected record and resumes following selection.
-- APP-28: Each completed user action that changes workbench content or organization is recorded as one undoable and redoable operation, except explicitly irreversible actions and actions that exceed the undo storage budget after a warning.
+- APP-28: Each completed user action that changes workbench content or organization is recorded as one undoable and redoable operation, except explicitly irreversible actions.
 - APP-29: All changes made by a single action, such as a bulk paste or multi-item move, are undone or redone together.
 - APP-30: Undo/redo excludes exports, sharing and permission changes, permanent deletion, and emptying trash. Recovery through retained snapshots remains separate.
-- APP-31: Undo cannot cross the point where an edit from another user is applied through synchronization.
-- APP-32: Undo/redo history is bounded by a retention limit. Actions beyond that limit are unavailable.
-- APP-33: A synchronized edit from another user establishes an undo boundary across the entire workbench, regardless of which dataset or item was changed.
-- APP-34: Undo/redo history persists across application restarts, subject to the history limit and workbench-wide synchronization boundary.
-- APP-35: A user's own edits remain undoable and redoable across their devices, subject to the history limit and boundaries established by other users' synchronized edits.
-- APP-36: Synchronizing edits from another device belonging to the same user does not establish an undo boundary.
-- APP-37: The undo/redo history limit is measured in completed user actions, not elapsed time. Each bulk action counts as one action.
+- APP-31: Undo/redo history is shared across tabs and windows displaying the same underlying items.
+- APP-32: Undo/redo history is scoped to the underlying edited items rather than to the entire workbench or individual tabs.
+- APP-33: Multi-item operations are undone and redone atomically across all affected items.
+- APP-34: Undo/redo history is retained in memory and is cleared when the application fully exits.
+- APP-35: Undo/redo history does not persist across application restarts or synchronize between devices.
+- APP-36: New edits invalidate redo history for affected items and linked operations.
+- APP-37: Undo/redo history is bounded by a configurable limit measured in completed user actions, not elapsed time. Each bulk action counts as one action.
 - APP-38: Undo/redo history defaults to 100 completed user actions.
-- APP-39: Users can configure the maximum number of retained undo/redo actions.
+- APP-39: Active-cell editing has temporary local undo/redo history that is cleared when the cell is deactivated. Once that history is exhausted, the undo/redo shortcut exits uncommitted editing and delegates to the shared operation history.
 - APP-40: Each workbench has a configurable storage budget for undo/redo history.
 - APP-41: Undo/redo history is limited by the configured action count and storage budget. When either limit is exceeded, remove the oldest complete actions, except for the temporary oversized-action allowance defined in APP-43 through APP-47.
 - APP-42: The interface indicates when storage constraints reduce history below the configured action count.
@@ -104,7 +104,7 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 ### Open
 
 - Detailed keyboard, navigation, and panel behavior.
-- Define the default undo/redo storage budget and supported configuration limits.
+- Define supported undo/redo action-limit configuration and memory safeguards.
 
 ## 3. Datasets and Fields
 
@@ -285,8 +285,8 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 - SYNC-03: Pending changes synchronize automatically when connectivity returns.
 - SYNC-04: The interface shows pending changes, sync progress, and failures.
 - SYNC-05: Synchronization supports a user's multiple devices and authorized participants in shared content.
-- SYNC-06: Synchronization merges changes independently at the cell level. When the same cell has conflicting edits, the most recently edited value becomes the synchronized value.
-- SYNC-07: Displaced conflicting values are retained temporarily for recovery rather than silently discarded.
+- SYNC-06: Synchronization merges concurrent changes to different fields of the same record. When the same field has conflicting edits, both candidate values are preserved and the user must choose the resolved value.
+- SYNC-07: Conflicting values remain available for review until the conflict is resolved. Neither candidate is silently discarded.
 - SYNC-08: Signing in is required for synchronization and online sharing, but not for local use.
 - SYNC-09: Synchronization is enabled separately for each workbench, allowing users to keep some workbenches entirely local while synchronizing others.
 - SYNC-10: Disabling synchronization for a workbench on a device preserves its local data and allows local editing to continue.
@@ -302,9 +302,9 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 ### Open
 
 - Authentication methods and account management.
-- Reliable ordering of edits from offline devices with inaccurate clocks.
-- Retention and recovery interface for displaced conflicting values.
-- Merge rules for non-cell content, including dashboards, folders, and automation definitions.
+- Change ordering and identification across offline devices.
+- Conflict-review interface and retention of candidate values after resolution.
+- Merge rules for non-cell content, including dashboards, collections, and automation definitions.
 - Sync infrastructure and storage.
 - Conflicts involving deletion or structural changes.
 - Offline attachment availability.
@@ -316,7 +316,7 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 
 - SHARE-01: Users can share workbenches with other users.
 - SHARE-02: Access supports Owner, Editor, and Viewer roles.
-- SHARE-03: Users can share individual folders, datasets, dashboards, and other content without sharing the entire workbench.
+- SHARE-03: Users can share individual collections, datasets, dashboards, and other content without sharing the entire workbench.
 - SHARE-04: Sharing an item does not grant access to unrelated content.
 - SHARE-05: Sharing a dashboard prompts the user to choose whether to include access to its source datasets.
 - SHARE-06: With source dataset access, a dashboard can remain live and reflect subsequent changes according to permissions.
@@ -326,9 +326,9 @@ Confirmation establishes an agreed product requirement, not necessarily a V1 del
 - SHARE-10: Revocation prevents further server access and synchronization in either direction for the revoked content.
 - SHARE-11: Revocation does not delete local copies, received snapshots, or exports.
 - SHARE-12: The sharing interface explains the limits of revocation.
-- SHARE-13: Access granted to a workbench or folder is inherited by its contents, including nested folders and newly created items.
+- SHARE-13: Access granted to a workbench or collection is inherited by its contents, including newly added items.
 - SHARE-14: Inherited access uses the role granted at the parent level unless an explicit permission exception applies.
-- SHARE-15: Authorized users can customize access for individual folders and items, overriding inherited permissions.
+- SHARE-15: Authorized users can customize access for individual collections and items, overriding inherited permissions.
 - SHARE-16: Permission overrides can grant a different role or explicitly deny access.
 - SHARE-17: The sharing interface shows each user's effective access and whether it is inherited or explicitly assigned.
 - SHARE-18: Removing an override restores inherited access.
@@ -359,14 +359,14 @@ Recovery snapshots restore workbench state. They are distinct from view-only sna
 
 ### Release Scope
 
-Recovery snapshots are confirmed future capabilities, not V1 deliverables. V1 includes autosave, persistent undo/redo, trash, and recovery of values displaced by sync conflicts. Storage and change tracking must allow recovery snapshots to be added later.
+Recovery snapshots are confirmed future capabilities, not V1 deliverables. V1 includes autosave, in-memory undo/redo, trash, and resolution of synchronization conflicts. Storage and change tracking must allow recovery snapshots to be added later.
 
 ### Confirmed
 
 - HIST-01: Recovery snapshots cover the entire workbench.
 - HIST-02: Users can create manual snapshots.
 - HIST-03: Workbench also creates automatic snapshots under a policy that remains to be defined.
-- HIST-04: Snapshots capture data, dataset definitions, field types, formulas, validation rules, saved views, dashboard configuration, and folder organization.
+- HIST-04: Snapshots capture data, dataset definitions, field types, formulas, validation rules, saved views, dashboard configuration, and collection organization.
 - HIST-05: Restoring a snapshot returns included content to its captured state, reversing subsequent additions, edits, and deletions.
 - HIST-06: Items permanently deleted after capture can return when restoring a snapshot that contains them.
 - HIST-07: Snapshots do not restore sharing permissions, access grants, personal application preferences, or window layout.
@@ -507,7 +507,7 @@ V1 includes the confirmed requirements in Sections 1–8 and 11–14 except wher
 ### Confirmed V1 Scope
 
 - Standalone Electron desktop application, built, packaged, and tested for Windows, macOS, and Linux.
-- Independent workbenches, nested folders, flexible explorer, tabs, split panes, and explicitly opened additional windows.
+- Independent workbenches, non-nesting collections, flexible explorer, tabs, split panes, and explicitly opened additional windows.
 - Full everyday spreadsheet editing and configurable validation.
 - All confirmed baseline field types, connected references, and expanded formulas.
 - Spreadsheet and configurable card views.
@@ -516,7 +516,7 @@ V1 includes the confirmed requirements in Sections 1–8 and 11–14 except wher
 - CSV and Excel import; CSV, Excel, PDF, and native export.
 - Local-first operation, optional accounts, and personal cross-device synchronization with conflict recovery.
 - Basic local automations with configurable missed-run behavior.
-- Autosave, persistent undo/redo, and configurable trash.
+- Autosave, in-memory undo/redo, and configurable trash.
 - Comprehensive accessibility and personalized appearance.
 - Built-in application updates with safe data migration.
 
