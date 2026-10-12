@@ -1,304 +1,241 @@
-# Workbench Version 1 Specifications
+# Workbench — Version 1 Product Specifications
 
-**Status:** V1 product specification — revised architecture baseline  
-**Companion:** `docs/SystemDesign.md`  
+**Status:** Consolidated V1 product baseline (ten systems approved, 2026-10-12)  
+**Companion:** `SystemDesign.md`  
+**Principle:** *Feel like a spreadsheet; behave like structured data underneath.*
 
-> Workbench should feel like a spreadsheet and behave like structured data underneath.
+## Purpose, scope, and interpretation
 
-## 1. Product Definition
+Workbench is a local-first desktop application for building, organizing, editing, querying, visualizing, and automating structured data. The grid is an interaction surface; Tables, Fields, Records, and relationships are the underlying domain model. Each workbench is a live, versioned `.wkbn` SQLite database. V1 works offline without accounts, cloud sync, or a server. Live references stay within one workbench.
 
-Workbench is a local-first desktop application for building, organizing, analyzing, and visualizing structured data. The grid is a primary interaction surface, not the underlying data model. A **workbench** is a portable, self-contained `.wkbn` artifact; **Workbench** names the application. V1 operates offline and does not require accounts, servers, or cloud synchronization. A `.wkbn` file is the live versioned artifact, physically a SQLite database with a private Workbench-owned schema, not an export archive or container around another working database.
+This document consolidates the approved V1 decisions into ten systems. **Consolidation does not remove previously approved V1 features** except where a later explicit decision replaced an earlier model: no standalone manual Sections, no separate Archive lifecycle, and no separate native resource-package format. Implementation details not specified here may be selected during development, provided product behavior is preserved. The companion system design describes implementation boundaries; this document governs product semantics.
 
-## 2. Core Object Model
+## 1. Desktop & Workspace — seven requirements
 
-```text
-Workbench
-├── Collection (non-nestable)
-│   ├── Table
-│   ├── Query
-│   └── Dashboard
-├── Table
-│   ├── Field
-│   ├── Record
-│   └── View
-├── Query
-├── Dashboard
-│   └── Widget
-└── File
-```
+### 1A. Configurable desktop shell
+The desktop includes title/menu area, optional Command Bar, Activity Bar, Explorer/Left Panel, tabbed Work Area, contextual Right Panel, Bottom Panel, and Status Bar. Panels can be shown/hidden, resized, and persisted. The Work Area has layout priority. The Activity Bar is reorderable; named layout presets are supported. Panels and layouts remain keyboard-accessible.
 
-Tables, Queries, and Dashboards can be at workbench root or inside a Collection. Collections cannot nest. Files are workbench-level resources. A Table owns Fields, Records, and Views. A View is a saved presentation of one Table; a Query is a live read-only derived dataset; a Dashboard contains Widgets. A value is logically `(recordId, fieldId) → value`; a grid cell is its presentation, not a separate authoritative object.
+### 1B. Resource-oriented Work Area
+Tables open through Views. Views, Queries, Dashboards, Files, and tools occupy preview, permanent, or pinned tabs. Tabs support activation, reorder, close, reopen/history behavior, and disambiguated names; avoid duplicate tabs for the same resource in a group. Support two editor groups with splitting and moving tabs between groups. Preserve focus and meaningful view-local state.
 
-## 3. Identity and Dependencies
+### 1C. Unified resource navigation
+Explorer exposes workbench root and Collection resources with type grouping, context actions, multi-selection, drag-and-drop, and creation. Search and Quick Open navigate resources and Records. Opening a Table selects its last-used View, falling back to its default View.
 
-Persisted resources, Fields, Records, options, and other identity-bearing objects use stable internal UUIDs independent of names, locations, and positions. Renames, moves, sorting, and filtering do not alter identity. Definitions own their dependency references; a rebuildable reverse-dependency index accelerates impact analysis. Broken dependencies are preserved where practical and surfaced in Problems, not silently erased. Destructive operations warn about affected dependents.
+### 1D. Shared commands
+Menus, toolbars, context menus, shortcuts, Command Palette, and contextual actions invoke a common command system with enablement and context. Shortcuts are customizable and conflicts are handled. Common commands remain discoverable.
 
-## 4. Workbench Boundary
+### 1E. Contextual editing and feedback
+Use inline editors, dialogs, dedicated editors, and the Right Panel according to the task. Bottom Panel includes Problems, Operations, and History surfaces. Notifications support preferences and actionable navigation. Preserve record editor, schema manager, View toolbar, creation flows, and dialog functionality already approved.
 
-Live references, Formulas, Summaries, Queries, and Dashboard dependencies are restricted to one workbench. Cross-workbench live links are excluded in V1. Import/export/native sharing can move snapshots between workbenches, with local identity remapping as required.
+### 1F. Session and window restoration
+Restore recent workbenches, windows, tabs, groups, panels, and layout state. A window shows one workbench or Home. Opening an already writable-open `.wkbn` activates its existing authority rather than creating another independent writer. New workbenches require name and destination before creation; successful operations autosave without an unsaved-workbench mode.
 
-## 5. Desktop and Window Model
+### 1G. Settings and accessibility
+Centralize application and workbench settings with explicit scope. Provide keyboard-only workflows, meaningful focus/selection state, screen-reader context, accessible dialogs/menus, and WCAG 2.2 AA targets where applicable. Keep shell/session state distinct from canonical Core domain state.
 
-Each desktop window displays one workbench or Home. Multiple windows can show different workbenches; one workbench must not be independently open for writing in two windows. Opening an already-open artifact activates its existing window. Opening another workbench offers This Window or New Window. Direct application launch attempts to reopen the most recent workbench, otherwise shows Home. Closing a window does not require a traditional save prompt.
+## 2. Resource Model & Navigation — seven requirements
 
-## 6. Workbench Creation and Saving
+### 2A. Stable hierarchy
+A Workbench contains non-nestable Collections, Tables, Queries, Dashboards, Automations, and workbench-root Files. Tables, Queries, Dashboards, and Automations may live at root or in a Collection. A Table owns Fields, Records, and Views; a Dashboard owns Widgets. Collections **organize** resources but do not own their data. Removing a Collection moves its contained resources to root unless the user explicitly chooses an additional deletion operation. Tables cascade deletion to their genuinely owned content.
 
-New workbenches require a name and file location before creation; there is no normal untitled unsaved state. Autosave is the persistence model: successful persistent domain operations durably commit their authoritative changes and required history together. React does not own an unsaved authoritative duplicate. `Ctrl/Cmd+S` may offer an explicit checkpoint/flush action but is not required to preserve ordinary edits.
+### 2B. UUID identity and references
+All persistent identity-bearing objects use stable UUIDs, including resources, Fields, Records, choices/options, Notes, and other applicable nested entities. Names, positions, labels, and locations never serve as identity. Renaming and moving preserve UUIDs and dependencies; duplication generates new UUIDs and remaps included references. Naming scopes, collisions, and ambiguous labels are handled consistently.
 
-## 7. Application Shell
+### 2C. Resource lifecycle
+Support applicable create, rename, duplicate, move, import/export, and delete operations through shared Core rules. Explorer multi-selection and bulk actions obey ownership and dependency checks. Broken dependencies remain identifiable and actionable rather than being silently discarded.
 
-The React/TypeScript shell includes title/menu area, command interface, Activity Bar, Left Panel, tabbed Work Area, Bottom Panel, Right Panel, and Status Bar. Explorer is the primary Left Panel surface; Problems appears in Bottom Panel; Status Bar communicates persistent state and background progress. UI layout and transient interaction belong to React, while saved resource configuration belongs to Core.
+### 2D. Table-owned Views
+Each Table has a required default View and may own additional Views. Views configure presentation but do not duplicate Records. Opening a Table chooses the last-used valid View or default. Views can be renamed, duplicated, and managed within their Table.
 
-## 8. Tabs and Resource Opening
+### 2E. Navigation and selection
+Explorer, Search, Quick Open, tabs, linked-record navigation, and contextual reveal use stable identities. View-local selection, scrolling, and navigation are distinct from saved View definitions. Revealing a Record must not silently rewrite saved filters; provide a clear navigation/reveal behavior when the Record is not currently visible.
 
-Tables open through Views, not generic Table tabs. Each Table has a default View; opening a Table selects its last-used View when available, otherwise default. Views, Queries, Dashboards, and Files can open in tabs. Single-click preview may reuse one preview tab; editing, double-clicking, or pinning promotes it. Existing normal tabs are activated rather than duplicated. Closing a tab does not delete or unsave the resource. Tab order and active context may restore on reopening.
+### 2F. Record display labels
+Record identity is UUID-backed. Tables support configurable single-Field or composite display labels and Linked Record Field-specific label overrides. Labels may be duplicated and are never used as references.
 
-## 9. Explorer
+### 2G. Contextual Notes
+Notes are supporting objects attached by UUID to Workbenches, Collections, Tables, Fields, Records, Views, Queries, Dashboards, Automations, or Files. Multiple Notes per target are allowed, with rich-text/Markdown editing, autosave, search, and contextual Right Panel management. **No Cell-level Notes**; comment on the Record when a particular value needs explanation. Notes are not standalone Explorer resources. Renaming/moving a target retains Notes; deletion and restoration follow target lifecycle. Standalone Markdown documents remain Files.
 
-Explorer shows Collections first, followed by root Tables/Queries/Dashboards grouped by type and alphabetized. Collection contents are type-grouped and alphabetized. Tables expand to show Views, with default View first. Collections expand/collapse and do not open as content tabs. Single-click openable resources previews; double-click opens normally. Files appear in a separate flat Files section, filterable by name/type/date. Explorer location is not identity.
+## 3. Tables, Fields & Relationships — six requirements
 
-## 10. Naming
+### 3A. Canonical structured data
+Tables own Fields and Records; values conceptually map `(record UUID, field UUID) -> typed value`. A cell is presentation, not an independently owned object. Blank differs from zero, false, or an explicit empty value. Empty Tables may have zero Fields and Records; virtual blank Grid rows do not create Records until edited. Metadata and Notes belong to their proper owners. Schema changes preserve existing information where possible.
 
-Names are human-readable and case-insensitively unique among same-type siblings. Different resource types may share a name under the same parent. Collections are unique at workbench root; Fields are unique within a Table; Views within a Table; Choice options within their Field. Rename preserves stable identity and dependent references. Moving resources checks destination name conflicts.
+### 3B. Rich Field types and configuration
+Support Text, Long Text, Email, Phone, URL; Number, Integer, Currency, Percentage, Rating; Boolean/Checkbox; Date, Time, DateTime, Duration; Single-choice and Multi-choice; Linked Record (single/multiple); Attachment; JSON; Formula, Lookup, Rollup/Summary; and Generated Fields. Choice options have stable identities. Currency has a configured currency; percentages use fractional underlying values; DateTime denotes an instant, Time a wall-clock time, Duration elapsed time. JSON remains structured content rather than implicit nested Fields. Display formats may share storage types. Each Field defines editor, formatting, defaults, constraints, and conversion behavior. No geographic or polymorphic multi-target relationship Field is required in V1.
 
-## 11. Tables and Grid Philosophy
+### 3C. Calculated and generated values
+Formula Fields use the shared typed expression language, stable Field bindings, and readable syntax such as `=[Quantity] * [Unit Price]` and supported relationship traversal. Lookup/Rollup/Summary Fields derive typed results through Linked Record relationships; supported aggregates include count, sum, average, min, max, and compatible extensions. Generated values include sequences, UUID, created/modified timestamps, and approved dynamic defaults such as random choice where appropriate. Generated and calculated Fields are normally read-only, with explicit Convert to Values where supported. Cycles are rejected; derived values are rebuildable and freshness-tracked.
 
-The Grid is finite and structured: rows are Records, columns are Fields, and values are Record–Field intersections. Row numbers are presentation positions, never identifiers; Field names replace spreadsheet letters as domain references. Empty Tables start with no Fields or Records. Virtual blank rows can fill viewport space but are not stored until edited. There are no virtual blank Fields. Familiar keyboard navigation, selection, editing, paste, and bulk operations should work where compatible with structured semantics.
+### 3D. First-class relationships
+Linked Record Fields point to one configured target Table and store target Record UUIDs, with single or multi-value cardinality. Support reverse navigation, Field-specific display labels, and candidate filtering from a Table or Query exposing stable source Record identities. Candidate restrictions do not silently erase pre-existing links. On target deletion, relationship policies support Preserve unresolved reference, Clear, or Restrict; relationship deletion does **not** automatically cascade to linked target Records. Queries, Lookups, Rollups, and Automations can consume relationships.
 
-## 12. Table and Field Creation
+### 3E. Severity-based validation
+Constraints include required, unique, typed/format, expression-based, and supported record-level rules. Rules may be **Errors** (block new commits) or **Warnings** (allow commit and appear in Problems). Structural/integrity rules always block invalid commits. Invalid interactive edits remain drafts until corrected or discarded. Never silently coerce or discard invalid input. Existing values made nonconforming by a schema change or legacy data are preserved and flagged; migration/repair is explicit. Bulk operations validate their proposed final state.
 
-A Table requires a name and can be created as Empty Table, Configure Table, or Import. Empty Tables start with zero Fields/Records. Configure Table defines initial schema. Import creates a new Table after preview and configuration. Grid Add Field creates a named Field, defaulting to Text. Pasting into an empty Table can propose Fields/types, with user review before committing schema.
+### 3F. Editing and schema management
+Grid editing, Record Details, schema manager, multi-record creation, bulk edits, import, and Automations share Core operations. Support familiar spreadsheet navigation, selection, clipboard, virtual blank rows, and schema creation. Field type changes preview conversions, dependency effects, and incompatible values; preserve recoverable originals where needed. Defaults affect new Records, not retroactively all existing Records. Committed operations integrate with History, Undo/Redo, and dependency invalidation.
 
-## 13. V1 Field Types
+## 4. Views & Presentation — six requirements
 
-Supported Field types:
+### 4A. Independent saved Views
+Each View presents one Table's canonical Records through independently persisted configuration: visible Fields, order, widths, frozen Fields, density, row height, filters, sorting, grouping, formatting, and appropriate view-specific settings.
 
-| Family        | Types                                |
-| ------------- | ------------------------------------ |
-| Text          | Text, Long Text, Email, Phone, URL   |
-| Numeric       | Number, Currency, Percentage, Rating |
-| Boolean       | Boolean, Checkbox                    |
-| Temporal      | Date, Date & Time, Time, Duration    |
-| Choice        | Choice, Multi-Choice                 |
-| Relationships | Reference, Multi-Reference, Summary  |
-| Derived       | Formula                              |
-| Content       | Attachment, JSON                     |
-| System-owned  | Generated                            |
+### 4B. Five native View types
+V1 includes **Grid, Kanban, Calendar, Gallery, and Pivot**. Each provides suitable navigation, selection, editing where applicable, and configuration. Pivot supports dimensions, aggregation, subtotals, and drill-through; Calendar uses date-bearing Fields; Kanban and Gallery use configurable cards.
 
-Currency is Field-level single-currency configuration; Percentage uses fractional underlying semantics (12.5% = 0.125); blank differs from false or zero. Date & Time denotes an instant, Time a wall-clock time, Duration elapsed time. Choice options have stable IDs and unique names. JSON is validated structured content but nested keys are not Fields. Generated modes: Sequence, UUID, Created Time, Modified Time. Geographic Field type is excluded in V1. Types own validation/editor/formatting semantics rather than scattering behavior through UI.
+### 4C. Organization and analysis
+Support filters, multi-key sorting, multi-level **Field-based** grouping, collapsible groups, summaries, and manual Record ordering where applicable. Moving a Record between Field-derived groups updates the underlying Field value and clearly communicates that effect. Convenient Add Group actions may create/configure a visible underlying choice Field. **Do not implement separate manual Sections, Section membership, or independent nested Sections.**
 
-## 14. References and Relationships
+### 4D. Formatting and rendering
+Support Field-level formatting defaults, View overrides, conditional formatting, reusable formatting presets, and advanced declarative renderers. Formatting is safe, bounded, accessible, and does not mutate canonical values.
 
-A Reference stores zero or one target Record in one configured Table; Multi-Reference stores zero or more target Records from one Table. Relationships use target IDs, not display labels. Each Reference Field chooses a display Field, which may be suggested automatically and can differ among References to the same Table. Reference traversal can expose target Fields. Derived referenced values are read-only at the referencing location; edit the source Record. Deleting a target preserves an identifiable broken relationship and surfaces Problems. Polymorphic multi-Table References are excluded in V1.
+### 4E. Dashboards
+Dashboards support responsive **12-column** widget layouts, placement/resizing, charts, KPIs, tables, text/labels, and approved widget variants. Widgets consume Tables, Views, or Queries as applicable. Support global and local filters, cross-filtering, drill-through, refresh/freshness states, and relevant interactive navigation. Broken sources remain identifiable in Problems.
 
-## 15. Summary Fields
+### 4F. Consistent interactions
+View toolbars, selection, keyboard behavior, contextual editors, linked-record navigation, and dependency updates follow shared semantics while respecting view-specific interaction models. UI renders bounded data windows rather than whole large Tables.
 
-A Summary is a read-only aggregate over Records reached through a multi-record relationship. It specifies the relationship, source Field/Records, and type-compatible aggregation such as Count, Sum, Average, Minimum, or Maximum. Summary definitions are authoritative; results are derived, optionally cached/materialized/indexed, and rebuildable. Source edits invalidate affected results. Known-stale results cannot silently appear current. Explicit Convert to values may snapshot current results into stored values.
+## 5. Queries & Expressions — six requirements
 
-## 16. Formula Fields
+### 5A. Unified Query resources
+One Query resource type supports either **Visual** or **SQL** definition mode, with UUID, lifecycle, dependencies, result schema, and execution status. A Query result is a read-only virtual dataset, not an editable Table.
 
-Formula expressions begin with `=` and reference Fields by human-readable bracket notation, e.g. `=[Quantity] * [Unit Price]`; names bind internally to stable Field IDs. Reference traversal may use `=[Customer].[Discount Rate] * [Subtotal]`. Formulas evaluate current-Record values and relationships, not spreadsheet coordinates or arbitrary cell ranges. Set aggregates belong in Summaries/Queries. The application-owned typed expression engine defines semantics; SQLite may execute compatible translated expressions without redefining them. Cycles are invalid. Definitions are authoritative; results are read-only, rebuildable, invalidated on change, and may be converted explicitly to stored values. Errors are surfaced in Problems.
+### 5B. Visual Query Builder
+Visual definitions use a typed application-owned Query Plan supporting source selection, compatible joins, projections, filters, computed expressions, grouping, aggregation, sorting, and limits. The builder can show generated SQL for inspection. Generated SQL is **not** editable as the source of truth for a Visual Query.
 
-## 17. Generated Fields
+### 5C. Controlled native SQL
+SQL Queries support authoring native SQLite `SELECT` queries, including supported joins, expressions, CTEs, subqueries, and aggregation, under enforced read-only access and resource bounds. SQL must not mutate internal SQLite state or access unauthorized internal metadata. **Duplicate as SQL Query** creates an independent editable SQL definition from supported generated SQL; no promise of two-way visual/SQL round-tripping.
 
-Generated modes are Sequence, UUID, Created Time, and Modified Time. Values are system-owned and normally read-only. Sequence can be numeric or formatted and does not follow row position. A user-facing UUID Field is distinct from the internal Record ID. Duplicating a Record generates new appropriate values. Convert to values may remove generation behavior. Created By and Modified By are excluded from V1.
+### 5D. Composable dependencies
+Queries can consume Tables and other Queries; cycles are rejected. Dependencies bind to stable identities, not display names. Results expose typed schemas, source Record identity where meaningful, and navigation to editable source Records. Query results with stable source Record identities may filter Linked Record candidates; aggregates without such identity may not.
 
-## 18. Attachments and Files
+### 5E. Typed expression semantics
+The application-owned typed expression engine serves Formulas, Visual Query expressions, validation, conditional formatting, and Automation conditions/actions where applicable. Context-specific functions and limitations are explicit. SQL mode intentionally retains SQLite SQL semantics, not a fictional identical expression language.
 
-Files are stable-identity workbench-level resources embedded in `.wkbn`. Attachment values reference zero or more Files and do not duplicate File bytes. Plain-text viewing/editing may be supported in-app; other types can open externally. File metadata and binary content use a logical File Store abstraction physically backed by SQLite inside `.wkbn`. Chunking/streaming representation is an implementation decision. Deletion of referenced Files is dependency-aware. Embedded content is data, never implicitly executable code.
+### 5F. Bounded, observable execution
+Execution pushes compatible work into SQLite, uses bounded streaming or specialized evaluation as necessary, and exposes progress, errors, result freshness, pagination, caching, and dependency status. Unbounded UI/application fallback is prohibited. Stale results are visibly identified.
 
-## 19. Required Fields and Validation
+## 6. Data Operations & Interoperability — six requirements
 
-Stored Fields may be Required. Missing/invalid values are preserved and surfaced as persistent Problems where safe, rather than silently replaced or routinely blocking incremental data entry. Semantic validators apply to Email, URL, numeric, Choice, Reference, JSON, and other types. Blank is distinct from explicit empty/zero/false values. Fixing a condition automatically resolves its Problem.
+### 6A. Import/export
+Import CSV, TSV, XLSX, and JSON into new Tables or existing Tables via append/upsert. Support preview, parsing, type inference, Field mapping, identity matching, conflict resolution, and validation. Export Table/View/Query data to supported interoperable formats, with selected/visible versus full-data options and clear derived-value semantics. Uploading a File is not importing its data.
 
-## 20. Field Type Conversion and Defaults
+### 6B. Structured clipboard
+Support cell/range, Record/row, and Field/column copy/paste where meaningful. Internal clipboard data retains supported types, references, and metadata; external text/HTML formats interoperate with spreadsheet applications. Paste obeys schema, constraints, and transactional operations.
 
-Type conversion attempts to preserve values. Convertible values are converted; incompatible originals remain identifiable and correctable as Problems, with impact preview for broad changes. Compatible type transitions may be cheaper than semantic conversions. Derived/system Fields may offer explicit Convert to values. Stored Fields may have defaults applied to newly created Records; changing defaults does not rewrite existing Records. Derived Fields do not use ordinary stored defaults.
+### 6C. Find, Replace & Transform
+Provide scoped search/replace across selections, Records, Fields, Views, and Tables where applicable. Type-aware transformations support expressions, preview, and transactional application. Read-only derived Fields remain protected.
 
-## 21. Record Operations
+### 6D. Bulk operations
+Support multi-record create/edit/delete/duplicate/move and applicable bulk schema/resource operations, with progress, cancellation when safe, meaningful History, and scheduled execution. Large operations must not block the UI.
 
-Records have stable IDs and can be created, edited, duplicated, deleted, and bulk-modified. Duplicating copies stored editable values and existing Reference/File relationships without duplicating targets; system values regenerate and derived values recalculate. Deletion is recoverable through Table history rather than resource Trash. Broken inbound References remain identifiable. Bulk operations use coherent domain-operation/transaction semantics; large work may stage or batch internally before atomic publication.
+### 6E. Atomic validation and explicit partial imports
+Validate the full proposed final state and distinguish blocking Errors from Warnings. Imports may **explicitly commit a user-accepted valid subset atomically**; rejected rows remain available for correction/export. No rows are silently skipped. Upsert validation includes affected existing Records and cross-row constraints. Other operations obey their defined atomic boundaries and report failures without half-committed changes.
 
-## 22. Views
+### 6F. Portable transfer
+Support dependency-aware resource copy/export/import, identity remapping, associated Notes/Files, and explicit unresolved-dependency reporting. Native resource transfers use `.wkbn` files; ordinary tabular export and clipboard are separate operations.
 
-A View is a saved presentation of one Table and does not duplicate Table data. It can define Field visibility/order/widths, frozen Fields, filters, sorting, grouping, density, row height, and conditional formatting. View configuration autosaves. V1 ships Grid View; other View Types may be added later. Multi-level grouping and type-appropriate group aggregates are presentation-only, distinct from Summary Fields. Each Table has a default View; last-used View may be reopened.
+## 7. Files, Portability & Templates — six requirements
 
-## 23. Queries
+### 7A. First-class Files
+Files are workbench-root resources with UUIDs, metadata, rename/replace/delete operations, previews, and built-in editors for supported text/Markdown and structured formats. Preview images, PDFs, and other supported media; opening externally is available when appropriate. Attachment Fields refer to File UUIDs rather than duplicating bytes.
 
-Queries are saved live read-only derived datasets from Tables and/or Queries. They can project, filter, join, calculate, group, aggregate, sort, and combine sources through a visual builder. Definitions use an application-owned typed Query Plan, not raw user SQL. Query dependency cycles are invalid. Existing References can inform join suggestions; ad-hoc compatible joins may be supported. Execution pushes semantically compatible work into SQLite and uses bounded application-owned evaluation for specialized behavior. Unbounded memory fallback is prohibited. Source changes propagate; navigation to editable source Records is preferred over editing Query results. SQL authoring is outside V1.
+### 7B. Managed and external Files
+Managed File bytes live within `.wkbn` through the logical File Store. External File resources retain paths/references and clearly show missing/inaccessible targets. Replacing content preserves the File resource UUID and appropriate dependencies. Embedded content is never implicitly executed.
 
-## 24. Dashboards
+### 7C. Dependency-aware resource transfer
+Export selected resources with previewed dependencies, included schema/data/Views/relationships/Notes/Files, and choices for required versus optional dependencies. Import remaps UUIDs and resolves naming and dependency conflicts explicitly.
 
-Dashboards contain Widgets that present live data from Tables/Queries without owning source Records. Core Widget classes include charts, KPI/value cards, tabular presentations, and text/labels. Widgets can configure placement, sizing, labels, and visualization. Broken sources remain identifiable and surface Problems. Dashboard-driven source editing and advanced global interactive filtering are outside V1.
+### 7D. Portable Workbench copies
+Save a Copy and complete duplication produce independently usable native `.wkbn` SQLite files. When external Files exist, present an inclusion preview with **per-File choices and Include All**; excluded references remain explicitly external. Portability warnings cover missing or environment-dependent resources.
 
-## 25. Problems
+### 7E. Templates
+Support complete-Workbench and appropriate resource templates with schema, presentation, dependencies, optional example data, and fresh identities on instantiation. Templates and transferred Automations obey trust activation rules.
 
-Problems are persistent actionable issues, not transient notifications. V1 severities are Error and Warning. Examples include invalid values, Required violations, conversion failures, broken References, Formula errors, and invalid Query/Widget dependencies. Status Bar shows counts; Bottom Panel lists Problems and navigates to affected resources/Records, opening previews as needed. Problems derive from authoritative state and disappear automatically when fixed. Results are bounded for large workbenches.
+### 7F. One native artifact format
+A resource-transfer `.wkbn` is a valid Workbench database containing selected resources and dependencies, not a ZIP or separate native package extension. Compatibility checks, migration, missing-dependency reporting, and explicit trust/activation decisions apply.
 
-## 26. Import
+## 8. Persistence, History & Recovery — six requirements
 
-Import converts external structured data into a **new Table** in V1; it does not merge/synchronize with existing Tables. Uploading a File is distinct from importing data. Import offers source preview, parsing options, Field names/types, and type-inference review. Format adapters parse/validate incrementally into non-authoritative staging. Publication is one coherent domain operation. Cancellation/failure before publication leaves authoritative state unchanged. Progress, responsiveness, and bounded memory are required for large imports.
+### 8A. Durable native persistence
+`.wkbn` is the **live SQLite database**, with private versioned schema, structured resources, managed Files, and metadata. One writable Core authority per open workbench. Successful persistent operations commit their authoritative mutation and history durably; autosave is the norm. No browser database, account, or cloud dependency.
 
-## 27. Export
+### 8B. Undo/Redo and History
+Coherent semantic operations drive Undo/Redo and inspectable Record/schema/resource History. Bulk imports and Automations have meaningful attribution and transaction boundaries. Restoration uses Core rules and can surface conflicts. History is distinct from snapshots and Trash.
 
-Export creates interoperable external representations, distinct from native sharing. View export defaults to visible filtered/ordered Fields and Records, with Include all data to export the underlying Table. Query results can export where supported. Derived values may export as current values. Exporters consume bounded streams through Workbench APIs, not the private SQLite schema; large exports support progress and safe cancellation.
+### 8C. Trash and deletion
+Deleted resources and owned content are recoverable through Trash where applicable; permanent deletion is explicit. Table deletion cascades to its owned Fields/Records/Views and contextual Notes; linked target Records do not cascade merely through relationships. Removing a Collection moves contained resources to root unless explicitly included in a broader delete. **No separate Archive lifecycle**; inactive content can use Collections and Explorer visibility. Restoration handles conflicts and dependencies.
 
-## 28. Native Sharing
+### 8D. Backups and recovery
+Support consistent SQLite backups while open, recovery checkpoints, configurable retention, safe restore, integrity diagnostics, and crash-safe interrupted-operation behavior. Backups are distinct from History, Undo/Redo, and Trash.
 
-Native sharing produces a separate snapshot **resource package** (format/extension TBD), not a `.wkbn` working artifact. It includes selected resources and recursively required dependencies, with contents inspectable before import/share. Import creates local duplicate resources with new UUIDs, remaps internal links, resolves naming conflicts without overwriting, and does not create live links to source workbenches. The resource-package format remains an implementation/product-detail question independent of `.wkbn`'s locked SQLite format.
+### 8E. Artifact versions and migrations
+Explicit artifact/schema versions, compatibility checks, safe upgrades, backup-before-migration, and safe handling of newer unsupported files. Migrations preserve UUIDs and recoverable data, with explicit reporting of incompatible changes.
 
-## 29. Trash and Deletion
+### 8F. Encryption and maintenance
+Optional encrypted `.wkbn` storage protects canonical content and managed Files at rest through a supported SQLite encryption mechanism. Backup, portability, and migrations respect encryption. Provide integrity checks, optimization, cleanup, and diagnostic maintenance tools.
 
-Resource-level deletion uses Trash for recoverable Tables, Queries, Dashboards, Collections, Files, and appropriate owned resources. Deletion warns about dependent resources rather than silently cascading. Restore preserves IDs where practical and resolves unavailable original locations. Permanent deletion is explicit. Record deletion instead uses Table history. Trash and history may have distinct retention policies.
+## 9. Execution & Performance — six requirements
 
-## 30. History and Recovery
+### 9A. Bounded data access
+Use bounded reads, pagination, virtualization, streaming, and data-layer sorting/filtering/grouping where appropriate. React never materializes entire large Tables or unbounded results. Preserve prior scale expectations: **1M Records routine, 10M primary V1 engineering target, 50M stress target, 100M+ best effort**; these are data/storage expectations, not simultaneous rendering guarantees.
 
-History is semantic and domain-operation based, separate from short-term resource-scoped undo/redo. Persistent mutations atomically commit authoritative state, required history metadata, and undo/recovery information. Undo/redo execute through Core, not raw SQL reversal. Physical recovery representation may use inverse data, before-state, snapshots, or specialized restoration. Durable history supports recovering deleted Records and bulk mistakes across restarts. It is not Git-style branching/version control. Retention and compaction are permitted; details remain implementation decisions.
+### 9B. Operation scheduling
+Coordinate interactive reads, serialized writes, Queries, imports, recalculation, backups, and maintenance. Prioritize user-facing work; provide progress, safe cancellation, and responsive UI. Background workers are execution helpers, never separate mutation authorities.
 
-## 31. `.wkbn` Artifact
+### 9C. Reactive freshness
+Validated canonical writes commit transactionally. Derived Formulas, Lookups, Rollups, Queries, Views, and Dashboards update **asynchronously**, with explicit stale/fresh/error states. Older calculation generations must not overwrite newer results. Consumers requiring fresh data wait for the relevant dependency generation.
 
-A `.wkbn` file is the live authoritative, portable, versioned SQLite-backed Workbench artifact. It is **not** a ZIP archive, directory bundle, exported container, or wrapper around a separate working database.
+### 9D. Indexing and caching
+Maintain identity/relationship/query indexes and rebuildable derived caches as useful. Optimization must not create a competing source of truth. Invalidation and recovery remain deterministic.
 
-```text
-Finance.wkbn
-└── SQLite database (private Workbench schema)
-    ├── format / domain metadata
-    ├── structured Tables / Records / relationships
-    ├── Queries / Views / Dashboards
-    ├── dependency and derived state
-    ├── history / recovery state
-    └── embedded File metadata and binary contents
-```
+### 9E. Limits and isolation
+Bound memory, execution time, result size, recursion, and expensive workloads. Failures remain local to affected calculations/operations and appear in Problems rather than corrupting canonical data.
 
-Logical Structured Repository and File Store are separate application-owned abstractions, both physically stored inside SQLite. Scalar Fields use hybrid table-oriented relational storage; specialized structures serve multi-values, relationships, metadata, history, and Files. The logical `(recordId, fieldId) → value` model remains independent of schema. Stable IDs, not user-facing names, govern physical identity. SQLite is used for transactional persistence and query execution but does not define product semantics. The schema is private; direct SQL modification is unsupported. Temporary non-authoritative files may exist outside `.wkbn` but must not compromise healthy-artifact portability. Copy/move/backup of a healthy workbench must preserve required state; implementation must account for SQLite journaling/checkpoint safety.
+### 9F. Operation visibility
+Expose queued/running/completed/failed/canceled operations in Operations, Problems, notifications, and Status Bar, with actionable diagnostics and appropriate detail levels.
 
-## 32. Inspectability and Safety
+## 10. Automations — six requirements
 
-Workbench exposes understandable contents and integrity/version information for workbenches and native packages, including resources and embedded File metadata. Users should be able to review shared contents, especially embedded Files, without editing private SQLite internals. Package import validates contents before authoritative publication. Embedded Files do not gain executable privileges by being opened as data. Unsupported/corrupt artifacts are handled conservatively.
+### 10A. First-class resources
+Automations have UUIDs, names, descriptions, enabled states, lifecycle operations, and root/Collection placement. They participate in Search, Explorer, duplication, templates, and resource transfer.
 
-## 33. Offline-First
+### 10B. Visual definitions
+Provide declarative trigger–condition–action editing for supported data-change events, resource events, manual runs, and scheduled triggers. Conditions use the typed expression engine; actions use authorized Core operations. Arbitrary user scripts are not the Automation model.
 
-Core operations—including open/create, editing, relationships, Formulas, Summaries, Queries, Dashboards, import/export, embedded Files, History, and Problems—work without a network, account, or remote database. Local `.wkbn` is authoritative. Future online integrations must not turn unrelated local workflows into network-dependent workflows. V1 excludes sync and collaboration.
+### 10C. Deterministic execution
+Core coordinates ordering, conflicts, transaction boundaries, bounded recursion/retriggering, and idempotence where appropriate. Automations cannot bypass validation, relationship policies, or write serialization.
 
-## 34. Persistence and Crash Safety
+### 10D. Trust and safety
+Locally authorized Automations may resume according to saved settings. Imported, copied-in, templated, or otherwise untrusted Automations are **disabled until reviewed and explicitly enabled** in the local context. Authorization is not blindly transferred with a `.wkbn`. No arbitrary native code or direct internal SQLite mutation. Destructive/environment-dependent actions have explicit safeguards.
 
-Persistent changes pass through one Core mutation authority per open workbench. SQLite transactions provide normal atomicity; committed operations survive and uncommitted operations do not partially publish. Bounded concurrent reads may use appropriate connections. Long work stages/prepares outside short publication transactions when practical. Derived indexes/materializations are rebuildable. Crashes, failed imports, and maintenance interruption must leave authoritative state recoverable. Corruption detection avoids speculative destructive repair. Structured metadata and embedded File writes must remain transactionally consistent.
+### 10E. Fresh dependencies and scheduling
+Automations requiring derived data wait for fresh inputs or fail/report clearly. Scheduled Automations execute **only while the relevant Workbench Core is running**; no hidden always-on background service or cloud execution. Define missed-run behavior per Automation and surface it on reopen. Respect execution budgets and cancellation.
 
-## 35. Format Versioning and Migration
+### 10F. Run history and recovery
+Expose test/manual run, enable/disable, status, timestamps, affected resources, logs, failures, and supported Undo/History. Integrate with Problems, Operations, and notifications.
 
-`.wkbn` has an explicit version and private SQLite schema. Supported older versions migrate deterministically with a recoverable pre-migration state. Failed migration must not knowingly destroy the last usable artifact. Newer unsupported formats must not be modified as if understood. Internal schema can evolve; interoperability occurs through Workbench APIs and supported external/native formats. Native resource packages have their own versioning as appropriate.
+## V1 technical boundaries and exclusions
 
-## 36. Scale Requirements
+- **Desktop:** MōBrowser 2.x preferred; Electron fallback if a concrete blocker emerges. Runtime-specific APIs isolated from Core. Multi-window support respects single-writer ownership.
+- **UI:** React + TypeScript; Workbench-owned Grid semantics with optional high-performance Grid adapter. DOM/Canvas/hybrid rendering is an implementation choice, not a domain contract.
+- **Core:** Modular desktop monolith; one mutation authority, typed APIs, domain operations, application-owned expression/dependency/History semantics.
+- **Data:** SQLite native `.wkbn`; private hybrid relational physical storage, with distinct logical structured repository and File Store.
+- **No V1 requirement:** accounts, cloud sync, realtime multi-user collaboration, live cross-workbench links, arbitrary scripting or native-code Automations, polymorphic multi-Table references, spreadsheet-coordinate formulas, or a Field-plugin marketplace.
+- **Not excluded:** native SQL SELECT Queries, five View types, advanced Dashboard interactions, optional encryption, templates, and Automations; earlier documents that excluded these are superseded.
 
-|      Records | Engineering expectation |
-| -----------: | ----------------------- |
-|    1 million | Routine                 |
-|   10 million | Primary V1 target       |
-|   50 million | Stress target           |
-| 100 million+ | Best effort             |
+## Acceptance invariants
 
-Targets describe storage/processing, not simultaneous rendering. Operations may become slower with scale, but the architecture must avoid artificial frontend or domain-model ceilings. Performance comes from SQLite set operations, indexing, bounded retrieval, streaming, virtualization, and measured derived materialization.
-
-## 37. Bounded Frontend Data
-
-React/Grid requests bounded windows of visible data and relevant metadata. It never owns whole large Tables or unbounded Query/Search results. Filtering, sorting, grouping, aggregation, and search should execute in the data/query layer when appropriate. React communicates through an application-owned typed Core API and never directly accesses SQLite. Presentation caches remain bounded and non-authoritative.
-
-## 38. Long-Running Operations
-
-Imports, exports, queries, recalculation, conversions, bulk edits, indexing, maintenance, integrity checks, and migrations execute without blocking the UI. Background Execution is an execution mechanism, not a second mutation authority. Workers may read/prepare/stage, but authoritative publication passes through Core. Long work offers progress and safe cancellation where practical. Interrupted derived work is marked invalid and rebuildable; stale results cannot silently be presented as current. Exact threads/processes/workers are implementation decisions.
-
-## 39. Desktop Technology
-
-Workbench V1 targets **MōBrowser 2.x**. **Electron** is the primary fallback only if concrete validation finds a material MōBrowser blocker; undocumented behavior is not itself a limitation. Validate native SQLite module packaging, background execution, file associations, multi-window behavior, cross-platform distribution, licensing, debugging, and performance. Runtime-specific APIs remain isolated from Core. Physical execution topology is chosen from measured requirements, not mandated as a separate Core process.
-
-## 40. Frontend Technology
-
-React + TypeScript implement application shell and UI. React owns tabs, panels, focus, selection presentation, scrolling, menus, and bounded displayed data; Workbench Core owns authoritative domain state, domain operations, Query/Formula semantics, history, and persistence. Build/state-management libraries remain implementation choices. Specialized high-performance rendering may coexist with React without making React authoritative for large datasets.
-
-## 41. Grid Architecture
-
-Workbench owns Grid semantics: navigation, selection, editing, clipboard, Field/Record identity, and domain operation dispatch. A third-party high-performance grid library **may** implement rendering/interaction behind a Workbench-owned Grid Adapter. The library must not own authoritative data, Formulas, Queries, dependencies, history, or persistence. DOM, Canvas, hybrid, and specific libraries remain open for evaluation. Bounded data windows, logical scrolling, keyboard access, and screen-reader behavior are mandatory evaluation criteria. Renderer choice must not leak into Core semantics.
-
-## 42. Accessibility
-
-Accessibility is architectural, targeting WCAG 2.2 AA where applicable. Keyboard-only workflows, focus management, meaningful roles/labels, contrast, screen-reader context, accessible dialogs/menus, and Grid navigation are required. Renderer and grid-library selection must validate accessibility rather than defer it. Large-data virtualization must preserve meaningful accessible context.
-
-## 43. Architecture and Ownership
-
-```text
-Operating System
-      ↓
-MōBrowser / Native Shell
-      ↓
-React UI
-      ↓
-Workbench Core API
-      ↓
-Workbench Core
-├── Application Services
-├── Domain Operations
-├── Expression / Dependency / History / Search
-      ↓
-Data / Query Layer
-      ↓
-SQLite
-      ↓
-.wkbn
-
-Background Execution ↔ Core / Data / Query
-```
-
-This is a **modular desktop monolith**, not a distributed service architecture. The diagram denotes responsibilities, not mandatory processes. One authoritative mutation stream exists per open workbench. Workbench owns typed expressions, typed Query Plans, domain operations, dependencies, and recovery semantics. SQLite owns transactional local storage and compatible query execution. Third-party libraries supply commodity capabilities without defining product meaning.
-
-## 44. V1 Exclusions
-
-V1 does not include cloud synchronization, real-time collaboration, accounts/permissions, cross-workbench live links, arbitrary SQL authoring, server deployment, general-purpose document editing, advanced Dashboard interactivity, polymorphic multi-Table References, third-party Field plugin marketplace, or spreadsheet-coordinate formulas. These exclusions do not prohibit forward-compatible design where it remains inexpensive and justified.
-
-## 45. Open Implementation Questions
-
-The following remain implementation choices, **not** unresolved decisions about whether `.wkbn` is SQLite-backed:
-
-- exact private SQLite schema and Field storage encodings;
-- UUID encoding and schema migration mechanics;
-- SQLite journaling, checkpointing, connection topology, and file-copy safety;
-- embedded File chunking/streaming representation;
-- semantic history physical representation and retention thresholds;
-- dependency generation/invalidation representation;
-- Formula/Summary materialization heuristics;
-- typed Query Plan translation and planner optimizations;
-- search indexing/tokenization and ranking;
-- Grid library and DOM/Canvas/hybrid renderer;
-- MōBrowser native SQLite and background-execution packaging validation;
-- worker/thread/process placement;
-- maintenance, reclamation, compaction, and integrity thresholds;
-- exact native **resource-sharing package** format (distinct from `.wkbn`);
-- detailed import/export adapter and batching choices.
-
-Do not reopen the locked `.wkbn` SQLite artifact decision merely because physical details are pending.
-
-## 46. Governing Principles and Acceptance
-
-V1 implementation must preserve these invariants:
-
-1. Product semantics are authoritative over framework conveniences.
-2. Local operation is first-class and does not require cloud services.
-3. Stable UUIDs define identity; names and positions do not.
-4. Domain operations represent meaningful persistent changes.
-5. Autosave means successful persistent operations are durable.
-6. One Core mutation authority exists per open workbench.
-7. React is presentation, not authoritative persistence or query state.
-8. `.wkbn` is the live self-contained SQLite-backed native artifact.
-9. SQLite schema is private and does not define Workbench semantics.
-10. Structured Store and File Store remain logically distinct inside `.wkbn`.
-11. Formulas, Summaries, Query Plans, dependencies, and history are application-owned.
-12. Derived state is explicitly invalidated and rebuildable; known-stale values are never silently current.
-13. Background work cannot bypass authoritative domain transactions.
-14. Large datasets are handled through bounded data and streaming, not frontend materialization.
-15. Imports stage and publish atomically; exports stream bounded results.
-16. Grid libraries may render and interact but do not own Workbench semantics.
-17. Accessibility and recoverability are design constraints, not optional polish.
-18. MōBrowser is the V1 runtime target; Electron is a concrete-blocker fallback.
-19. Runtime-specific APIs stay out of domain Core where practical.
-20. Infrastructure is added to solve validated problems, not hypothetical distributed-system needs.
-
-**Implementation should follow `docs/SystemDesign.md`; unresolved technical assumptions should be tested through `docs/ArchitectureValidationPlan.md`.**
+1. Stable UUIDs, not labels/positions, determine identity.
+2. All persistent mutations flow through Core and commit atomically with relevant History.
+3. Severity-based validation blocks Errors but allows Warnings; existing nonconforming data is not silently destroyed.
+4. Views and Query results never become independent copies of Table Records.
+5. Collections organize; Tables own their nested content.
+6. No manual Sections, no separate Archive lifecycle, and no second native package format.
+7. `.wkbn` remains a live versioned SQLite database; transfers and copies remain valid `.wkbn` files.
+8. React never directly accesses SQLite or requires unbounded data materialization.
+9. Derived state is versioned/freshness-tracked and cannot silently appear current when stale.
+10. Automations cannot bypass Core, validation, or local trust rules.
+11. Accessibility, portability, and recoverability are architectural requirements.
+12. Detailed engineering choices may be made during implementation without another pre-implementation validation phase.
