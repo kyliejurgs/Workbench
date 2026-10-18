@@ -100,7 +100,7 @@ Workbench (.wkbn)
 └── contextual Note (associated with supported target UUID)
 ```
 
-Tables, Queries, Dashboards, and Automations may exist at root or in a Collection. Collections are **organizational**, not owners of contained resources. Deleting a Collection relocates contents to root unless explicitly included in a separate deletion request. Table ownership is genuine and deleting a Table includes owned Fields, Records, and Views. Dashboard-owned Widgets and target-owned Notes follow applicable lifecycle semantics. Individual Cells do not own Notes.
+Tables, Queries, Dashboards, and Automations may exist at root or in a Collection. Collections are **organizational**, not owners of contained resources. Deleting a Collection moves the Collection and all currently contained resources to Trash as one recoverable cascading operation, preserving their hierarchy and UUIDs for restoration, subject to Core validation. Table ownership is genuine and deleting a Table includes owned Fields, Records, and Views. Dashboard-owned Widgets and target-owned Notes follow applicable lifecycle semantics. Individual Cells do not own Notes.
 
 ### 3.2 Stable identity
 
@@ -334,7 +334,7 @@ These choices should be made pragmatically in code and supporting design notes, 
 4. Each open Workbench has one Core mutation authority.
 5. React and runtime adapters do not directly mutate SQLite.
 6. UUID identity survives rename/move; duplication/import remaps identities.
-7. Collections organize, Tables own; deletion follows explicit ownership.
+7. Collections organize, Tables own; Collection deletion cascades through contained resources, while genuinely owned descendants follow their ownership lifecycle.
 8. Notes attach to objects, not individual Cells.
 9. Views present canonical Table data; no manual Sections domain model.
 10. Visual and SQL Queries are distinct definitions of one Query resource type.
