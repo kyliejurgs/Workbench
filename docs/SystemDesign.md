@@ -69,6 +69,8 @@ Target MōBrowser 2.x. Electron is the primary fallback if a concrete runtime li
 
 Provide title/menu area, configurable Command Bar, reorderable Activity Bar, Explorer/Left Panel, two-group tabbed Work Area, contextual Right Panel, Bottom Panel (Problems/Operations/History), and Status Bar. Persist layout presets, panel geometry/visibility, tabs, preview/pinned status, window sessions, and relevant editor-local state. Support customizable shortcuts, Command Palette, context menus, notifications/preferences, and a common command registry.
 
+Explorer is a hierarchy-first navigation surface, not a search or filtering interface. It supports resource browsing, selection, context actions, and hierarchy-aware sorting through its overflow menu. The dedicated Left Search panel owns persistent resource/content search and filtering, while Command Center/Quick Open owns rapid navigation. These surfaces share stable resource identities and navigation commands.
+
 ### 2.3 UI versus domain state
 
 UI owns ephemeral focus, selection, scrolling, hover, panel geometry, preview tabs, and bounded presentation caches. Core owns resource identity, schema, Record values, Views' saved definitions, Notes, dependencies, Query definitions, Automation definitions, History, and durable domain state. Session/layout state may persist but must not be confused with canonical resource state. UI components may optimistically display pending edits, but Core acceptance determines the committed result.

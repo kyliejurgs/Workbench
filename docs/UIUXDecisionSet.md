@@ -46,7 +46,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 6. **Creation.** Unified New entry points with context-sensitive resource choices and valid destinations.
 7. **Context actions.** Consistent context menus and bulk actions backed by shared commands and Core validation.
 8. **Drag and drop.** Move eligible resources between root and Collections; Files remain root-only; Views remain Table-owned.
-9. **Ordering/filtering.** Name, Type, Modified, Opened, and Manual ordering where applicable, with searchable/filterable Explorer.
+9. **Explorer ordering and search separation.** Explorer supports Name, Type, Modified, Opened, and Manual ordering where applicable, respecting the resource hierarchy. Sorting controls are available through the Explorer header overflow menu. Explorer does not provide a dedicated name filter, search field, or resource-filtering mode. Resource and content discovery belong to the dedicated Left Search panel; rapid navigation belongs to the Command Center/Quick Open. Explorer remains focused on browsing and organizing resources.
 10. **Quick Open versus Search.** Quick Open navigates rapidly; persistent Left Search offers broader discovery and results.
 11. **Command Center modes.** Plain text for Quick Open; `>` commands; `@` Records; `#` resource types.
 12. **History/performance.** Per-window Back/Forward and recent destinations; virtualize large Explorer trees.

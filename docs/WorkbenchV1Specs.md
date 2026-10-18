@@ -19,7 +19,7 @@ The desktop includes title/menu area, optional Command Bar, Activity Bar, Explor
 Tables open through Views. Views, Queries, Dashboards, Files, and tools occupy preview, permanent, or pinned tabs. Tabs support activation, reorder, close, reopen/history behavior, and disambiguated names; avoid duplicate tabs for the same resource in a group. Support two editor groups with splitting and moving tabs between groups. Preserve focus and meaningful view-local state.
 
 ### 1C. Unified resource navigation
-Explorer exposes workbench root and Collection resources with type grouping, context actions, multi-selection, drag-and-drop, and creation. Search and Quick Open navigate resources and Records. Opening a Table selects its last-used View, falling back to its default View.
+Explorer exposes Workbench-root and Collection resources through a compact hierarchical tree with resource icons, context actions, multi-selection, drag-and-drop, creation, and hierarchy-aware sorting through its header overflow menu. Explorer does not include resource-search or filtering controls. The dedicated Left Search panel handles resource and content discovery, while Command Center/Quick Open provides rapid navigation. Opening a Table selects its last-used View, falling back to its default View.
 
 ### 1D. Shared commands
 Menus, toolbars, context menus, shortcuts, Command Palette, and contextual actions invoke a common command system with enablement and context. Shortcuts are customizable and conflicts are handled. Common commands remain discoverable.
