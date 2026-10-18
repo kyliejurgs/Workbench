@@ -1,7 +1,10 @@
 # Workbench — Version 1 Product Specifications
 
 **Status:** Consolidated V1 product baseline (ten systems approved, 2026-10-12)  
-**Companion:** `SystemDesign.md`  
+**Companion documents:**
+- `SystemDesign.md` — technical architecture and Core contracts
+- `UIUXDecisionSet.md` — approved UI/UX decisions
+- `DetailedDesign/` — detailed screen and interaction specifications
 **Principle:** *Feel like a spreadsheet; behave like structured data underneath.*
 
 ## Purpose, scope, and interpretation
@@ -14,6 +17,8 @@ This document consolidates the approved V1 decisions into ten systems. **Consoli
 
 ### 1A. Configurable desktop shell
 The desktop includes title/menu area, optional Command Bar, Activity Bar, Explorer/Left Panel, tabbed Work Area, contextual Right Panel, Bottom Panel, and Status Bar. Panels can be shown/hidden, resized, and persisted. The Work Area has layout priority. The Activity Bar is reorderable; named layout presets are supported. Panels and layouts remain keyboard-accessible.
+
+Detailed shell layout, panel behavior, and interaction specifications are defined in `DetailedDesign/`. The product requirements in this section establish supported capabilities rather than exact visual placement or dimensions.
 
 ### 1B. Resource-oriented Work Area
 Tables open through Views. Views, Queries, Dashboards, Files, and tools occupy preview, permanent, or pinned tabs. Tabs support activation, reorder, close, reopen/history behavior, and disambiguated names; avoid duplicate tabs for the same resource in a group. Support two editor groups with splitting and moving tabs between groups. Preserve focus and meaningful view-local state.
@@ -54,7 +59,18 @@ Explorer, Search, Quick Open, tabs, linked-record navigation, and contextual rev
 Record identity is UUID-backed. Tables support configurable single-Field or composite display labels and Linked Record Field-specific label overrides. Labels may be duplicated and are never used as references.
 
 ### 2G. Contextual Notes
-Notes are supporting objects attached by UUID to Workbenches, Collections, Tables, Fields, Records, Views, Queries, Dashboards, Automations, or Files. Multiple Notes per target are allowed, with rich-text/Markdown editing, autosave, search, and contextual Right Panel management. **No Cell-level Notes**; comment on the Record when a particular value needs explanation. Notes are not standalone Explorer resources. Renaming/moving a target retains Notes; deletion and restoration follow target lifecycle. Standalone Markdown documents remain Files.
+
+Each supported parent may have at most one optional Markdown Note. Supported parents are Workbench, Collection, Table, Field, Record, View, Query, Dashboard, Automation, and File.
+
+Notes are UUID-identified supporting objects associated with their parent through stable identity. They are not standalone Explorer resources and cannot be independently moved, reassigned, ordered, pinned, or duplicated.
+
+Notes support Markdown editing, Live Preview and Source modes, autosave, recoverable drafts, headings, checklists, an outline, internal UUID-based resource links, search, History, and Undo/Redo.
+
+The contextual Right Panel is the primary Note editing surface. An optional full editor tab provides additional editing space.
+
+Renaming or moving a parent preserves its Note. Deletion, restoration, and permanent removal follow the parent's lifecycle. No Cell-level Notes are supported; use the Record Note when explaining a particular value.
+
+Standalone Markdown documents remain independent File resources.
 
 ## 3. Tables, Fields & Relationships — six requirements
 

@@ -4,9 +4,18 @@
 **Companion:** `WorkbenchV1Specs.md`  
 **Architecture:** Local-first modular desktop monolith
 
-## About this document
+## Document responsibilities and decision precedence
 
-`WorkbenchV1Specs.md` defines product semantics and takes precedence if documents disagree. This design establishes responsibilities, invariants, and execution boundaries. It intentionally does not prescribe every library, physical table, algorithm, dialog, or worker topology. The approved ten-system consolidation supersedes contradictory older design statements, particularly the Visual-only Query model, Grid-only Views, non-blocking validation, import-to-new-Table-only behavior, separate resource packages, and lack of Automations.
+This document defines Workbench's technical architecture, responsibility boundaries, domain invariants, and execution model.
+
+The companion documents have distinct responsibilities:
+
+- `WorkbenchV1Specs.md` defines product functionality and semantics.
+- `SystemDesign.md` defines technical architecture and Core contracts.
+- `UIUXDecisionSet.md` records approved UI/UX decisions.
+- `DetailedDesign/` specifies individual application surfaces.
+
+Previously approved decisions remain authoritative. An explicitly later-approved decision supersedes contradictory older wording. Contradictions between approved decisions must be identified and clarified rather than resolved through arbitrary document precedence. Detailed UI specifications may refine presentation and interaction without silently changing approved product functionality.
 
 ## 1. Architecture foundations
 
@@ -67,9 +76,13 @@ Target MōBrowser 2.x. Electron is the primary fallback if a concrete runtime li
 
 ### 2.2 React shell
 
-Provide title/menu area, configurable Command Bar, reorderable Activity Bar, Explorer/Left Panel, two-group tabbed Work Area, contextual Right Panel, Bottom Panel (Problems/Operations/History), and Status Bar. Persist layout presets, panel geometry/visibility, tabs, preview/pinned status, window sessions, and relevant editor-local state. Support customizable shortcuts, Command Palette, context menus, notifications/preferences, and a common command registry.
+The React/TypeScript application shell coordinates navigation, commands, editor groups, panels, window-local state, and contextual presentation.
 
-Explorer is a hierarchy-first navigation surface, not a search or filtering interface. It supports resource browsing, selection, context actions, and hierarchy-aware sorting through its overflow menu. The dedicated Left Search panel owns persistent resource/content search and filtering, while Command Center/Quick Open owns rapid navigation. These surfaces share stable resource identities and navigation commands.
+The shell uses the shared command registry and communicates with Workbench Core through defined interfaces. It does not independently mutate canonical domain state.
+
+Approved shell and panel interactions are specified in `UIUXDecisionSet.md` and `DetailedDesign/`.
+
+Window and session state may be persisted independently from canonical Workbench resource data.
 
 ### 2.3 UI versus domain state
 
@@ -114,7 +127,13 @@ Logical data is `(recordId, fieldId) -> value`. Physical representation can be h
 
 ### 3.4 Notes
 
-Store Notes as UUID-identified supporting objects with `target_type` and `target_uuid` (or equivalent typed identity) and content/metadata. Manage through the Right Panel. Notes on Fields and Records are supported; Cell Notes are not. Notes are searchable and follow the lifecycle of their target. Markdown Files remain independent File resources.
+Model Notes as UUID-identified supporting objects with a typed parent identity consisting of parent type and parent UUID. Enforce at most one Note per supported parent through Core invariants and an appropriate uniqueness constraint.
+
+Notes are parent-owned supporting content, not independent resources. They participate in their parent's deletion, restoration, History, and identity-preserving operations.
+
+The Core provides Markdown content persistence, revision-aware updates, search indexing, internal resource-link resolution, and draft-safe mutation operations. The UI provides contextual Right Panel editing and an optional full editor tab. Notes do not appear as standalone Explorer resources.
+
+Cell Notes are excluded. Independent Markdown documents use the File resource model.
 
 ## 4. Tables, Fields, validation, and relationships
 

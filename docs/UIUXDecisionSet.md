@@ -7,11 +7,13 @@
 
 ## Interpretation and precedence
 
-This document consolidates the approved UI/UX decisions from the 12-system design-planning process. It supplements, rather than replaces, the approved V1 product and architecture baselines. The Core remains authoritative for domain data and operations; the React UI owns presentation, local editor state, and interaction. Where an older document conflicts with an explicitly later-approved decision, flag the discrepancy for reconciliation rather than silently discarding either requirement. In particular, the later-approved **one optional Markdown Note per supported parent** replaces older wording suggesting multiple Notes per target.
+This document records the approved UI/UX decisions from the 12-system design-planning process. It supplements the V1 product and architecture baselines without replacing their responsibilities.
 
-**Preserved architecture:** local-first desktop app; React + TypeScript and MUI; MōBrowser preferred, Electron fallback; authoritative versioned SQLite `.wkbn` file; one writable Workbench Core authority per open Workbench shared across windows; transactional canonical writes; asynchronous, version-safe derived calculations with explicit freshness; UUID resource identity; no background Automation execution when the relevant Core is closed. Resource transfers use valid native `.wkbn` databases, not a second package format.
+The Core remains authoritative for canonical domain data and operations. The React UI owns presentation, interaction, and appropriate local editor state.
 
-**Approval convention:** Decisions below are locked functional/design-planning baselines. Screen-family designs will be provisionally approved and periodically reviewed together; refinements to presentation must preserve approved functional behavior. Exact visual tokens, accent palette, and polished screen compositions remain intentionally deferred to mockup review.
+Later explicitly approved decisions supersede contradictory older wording. Contradictions between approved decisions require clarification rather than silent resolution.
+
+Detailed screen and panel behavior is specified in `DetailedDesign/`. These specifications refine the approved UI/UX decisions without reopening product functionality by default.
 
 ---
 
@@ -43,7 +45,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 3. **Collection semantics.** Collections remain non-nestable organizational containers. Deleting a Collection moves the Collection and all resources currently contained within it to Trash as one recoverable cascading operation. Resources retain their UUIDs and ownership relationships. Restoring the Collection restores its contained resources and placement, subject to dependency and conflict validation.
 4. **Table expansion.** Tables expand to Views only; Fields are managed in contextual Right Panel and Schema Manager.
 5. **Selection/opening.** Single-click selects; double-click opens permanently; support multi-selection and keyboard equivalents.
-6. **Creation.** Unified New entry points with context-sensitive resource choices and valid destinations.
+6. **Creation.** Unified New entry points provide context-sensitive resource choices and valid destinations. The Explorer `+` creates eligible resources relative to the current selection. When a Collection is selected, or the selected resource belongs to a Collection, that Collection is the default destination. When a root-level resource is selected or nothing is selected, Workbench root is the default destination. Resource placement restrictions remain authoritative: Files are root-only, Views are Table-owned, and Collections cannot be nested.
 7. **Context actions.** Consistent context menus and bulk actions backed by shared commands and Core validation.
 8. **Drag and drop.** Move eligible resources between root and Collections; Files remain root-only; Views remain Table-owned.
 9. **Explorer ordering and search separation.** Explorer supports Name, Type, Modified, Opened, and Manual ordering where applicable, respecting the resource hierarchy. Sorting controls are available through the Explorer header overflow menu. Explorer does not provide a dedicated name filter, search field, or resource-filtering mode. Resource and content discovery belong to the dedicated Left Search panel; rapid navigation belongs to the Command Center/Quick Open. Explorer remains focused on browsing and organizing resources.
@@ -120,7 +122,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 9. **Execution history.** Bounded, searchable metadata and privacy-conscious parameter handling.
 10. **Result reuse.** Query sources for Dashboards and other Queries, cycle checks, export, drill-through, Automation integration, and explicit Materialize Results to Table snapshot.
 11. **Dashboard modes.** Explicit View/Edit; staged layout changes with Save and recoverable drafts.
-12. **Dashboard layout.** Responsive 12-column snap grid, drag/resize, collision handling, keyboard operation, canonical nonoverlap.
+12. **Dashboard layout.** Responsive 12-column snap grid, drag/resize, collision handling, keyboard operation, canonical non-overlap.
 13. **Widget types.** KPI, chart, Table, Pivot, Text, Filter, Record List, and Media, owned by Dashboard.
 14. **Data sources.** Unified Table/View/Query source picker with UUID mapping, freshness, and repair.
 15. **Filters.** Global and widget filters, temporary cross-filter, drill-through, saved defaults distinct from transient interaction.
@@ -252,21 +254,31 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 - **Accessibility:** Keyboard-only workflows, screen-reader context, visible focus, meaningful feedback, reduced motion, WCAG 2.2 AA target where applicable.
 - **Performance:** Virtualization, bounded reads/results, responsive UI; previously approved approximate scale targets of 1M routine, 10M primary, 50M stress, 100M+ best effort remain planning goals, not promises of universal performance.
 
-## Known documentation reconciliation
+## Documentation relationships
 
-1. Older Workbench documentation may say multiple Notes per target. The later-approved UI/UX requirement is **one optional Markdown Note per supported parent**, with separate root Markdown Files.
-2. This document describes UI/UX approvals not yet merged into the existing `WorkbenchV1Specs.md` or `SystemDesign.md`; reconcile references deliberately when updating documentation.
-3. Better Spreadsheet's earlier application-layout/style documentation is a useful design precedent, **not** an architecture replacement. Do not carry forward its obsolete Angular/PWA/cloud synchronization assumptions.
-4. The exact default accent, final palette, typography choices, dimensions, and visual tokens are **not locked**. They are to be decided with actual mockups.
+- `WorkbenchV1Specs.md` defines approved product functionality.
+- `SystemDesign.md` defines architecture and Core responsibilities.
+- `UIUXDecisionSet.md` records approved interaction and design decisions.
+- `DetailedDesign/` contains screen-family and panel specifications.
 
-## Next design phase
+Later explicitly approved decisions supersede conflicting older wording. Genuine contradictions between approved decisions require clarification rather than silent resolution.
 
-**Start Screen Family 01: Application Shell & Navigation.**
+The Better Spreadsheet repository is a legacy design and feature reference, not the authoritative Workbench architecture.
 
-1. Produce a structural wireframe for the default Workbench desktop window based on the approved shell.
-2. Cover Default, Focus/Grid, two-editor-group, and constrained-window variants.
-3. Specify panel toggles, resizing, tabs, Explorer, Command Center, Right Panel, Bottom Panel, and Status Bar interactions.
-4. Review shell/feature integration, then develop polished Light/Dark mockups and a living token system.
-5. Provisionally approve the shell family, log changes and dependencies, and proceed to Grid/Record workflows.
+The exact default accent, final palette, typography choices, dimensions, and visual tokens remain deferred until detailed visual design.
 
-**Repository action:** Add this Markdown document to the planned `ui-design` branch only when explicitly authorized. This file is a portable draft; generating it does not modify the repository.
+## Detailed design
+
+Detailed UI design is organized into:
+
+- `DetailedDesign/ShellDesign.md`
+- `DetailedDesign/LeftPanelDesign.md`
+- `DetailedDesign/WorkAreaDesign.md`
+- `DetailedDesign/RightPanelDesign.md`
+- `DetailedDesign/BottomPanelDesign.md`
+
+`ShellDesign.md` defines the shared application shell, region relationships, global layout, and cross-panel interactions.
+
+The remaining documents define their respective application surfaces and interactions.
+
+Detailed design proceeds through progressive approval, with periodic cross-feature integration reviews. Approved functionality is preserved unless explicitly revised. Visual tokens and unresolved presentation details are determined through progressive mockup review.
