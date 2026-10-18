@@ -31,7 +31,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 12. **Window behavior.** One Workbench or Home per window; multiple windows can share one Workbench Core, with independent UI layout and focus.
 13. **Opening Workbenches.** Reuse/activate an already open Workbench authority rather than starting another writer; new Workbenches normally open in a new window.
 14. **Session restoration.** Restore previous windows, tabs, editor groups, panels, and layout by default, subject to safe recovery.
-15. **Panel headers and controls.** Predictable titles, contextual actions, close/collapse controls, and resize affordances.
+15. **Panel headers and controls.** Predictable titles, contextual actions, close/collapse controls, and resize affordance.
 16. **Two-group editor ceiling.** At most two editor groups, with horizontal or vertical split; independent group state.
 17. **Focus and presentation.** Provide focused layouts without destroying saved panel preferences.
 18. **Default shell.** Left Explorer open; Right and Bottom panels closed; one editor group; optional Command Bar hidden.
@@ -40,7 +40,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 
 1. **Unified Explorer.** Navigate Workbench resources through one tree with clear root and Collection grouping.
 2. **Hierarchy.** Collections are flat/non-nestable organizational containers; Tables, Queries, Dashboards, and Automations can be at root or in a Collection; Files are Workbench-root resources.
-3. **Collection semantics.** Removing a Collection does not implicitly delete its contained resources; genuinely owned resources follow their own cascade rules.
+3. **Collection semantics.** Collections remain non-nestable organizational containers. Deleting a Collection moves the Collection and all resources currently contained within it to Trash as one recoverable cascading operation. Resources retain their UUIDs and ownership relationships. Restoring the Collection restores its contained resources and placement, subject to dependency and conflict validation.
 4. **Table expansion.** Tables expand to Views only; Fields are managed in contextual Right Panel and Schema Manager.
 5. **Selection/opening.** Single-click selects; double-click opens permanently; support multi-selection and keyboard equivalents.
 6. **Creation.** Unified New entry points with context-sensitive resource choices and valid destinations.
@@ -206,7 +206,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 
 1. **Notifications.** Quiet routine edits; layered toasts for meaningful events; persistent issues in context/Problems, lengthy work in Operations.
 2. **Errors.** Context-first inline actionable findings linked to centralized Problems; avoid duplicate unrelated alerts.
-3. **Progress.** Nonblocking operation progress and persistent Operations history; queued/running/completed/failed/cancelled; safe cancellation only.
+3. **Progress.** Non-blocking operation progress and persistent Operations history; queued/running/completed/failed/cancelled; safe cancellation only.
 4. **Save/freshness.** Distinct canonical save and derived Fresh/Stale/Computing/Error indicators, with clear explanation.
 5. **Messaging.** Plain-language what happened/impact/next action, expandable diagnostics.
 6. **Conflicts.** Preserve local draft; show current saved value and explicit resolution; no silent overwrites or lost drafts.
@@ -214,7 +214,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 8. **Dependencies.** Keep safe degraded resources accessible; identify missing dependencies and offer guided repair; do not silently remove configuration.
 9. **Partial outcomes.** Item-level succeeded/rejected/skipped/failed summaries, correction and retry; respect atomic operations and explicitly accepted valid subsets.
 10. **Crash recovery.** Guided reopen from last committed state, recover drafts, report interrupted operations and integrity/migration issues; no unsafe automatic rewriting.
-11. **Confirmations.** Risk-based, with impact previews for consequential operations and explicit acknowledgment for irreversible actions; explain Table-owned cascades versus Collection non-cascade.
+11. **Confirmations.** Risk-based, with impact previews for consequential operations and explicit acknowledgment for irreversible actions; explain Table-owned cascades versus Collection cascade.
 12. **Notification history.** Lightweight center with links to Problems, Operations, History, resources; noncritical preferences, critical safety notices preserved.
 13. **Diagnostics.** Central diagnostics with contextual entry points, operation IDs/Core health/dependency status and privacy-conscious copyable details; exclude sensitive contents by default.
 14. **Exceptional states.** Consistent empty, filtered-empty, loading, unavailable, error, invalid states with contextual recovery actions; preserve selection/drafts where safe.
@@ -243,7 +243,7 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 ## Cross-cutting product invariants to preserve
 
 - **Data authority:** Canonical writes are transactional Core operations; derived updates are asynchronous, version-safe, and explicitly freshness-tracked. Dependent operations respect freshness guarantees.
-- **Resource model:** UUIDs; non-nestable Collections; Collection deletion does not implicitly delete contained resources; Table ownership of Fields/Records/Views has cascade behavior; Files root-only; one optional Note per supported parent.
+- **Resource model:** UUIDs; non-nestable Collections; Collection deletion implicitly deletes contained resources; Table ownership of Fields/Records/Views has cascade behavior; Files root-only; one optional Note per supported parent.
 - **Native format:** Live `.wkbn` SQLite database for Workbenches, copies, and resource transfers; external File inclusion is explicit with Include All.
 - **View behavior:** Five native Views; saved View configuration distinct from temporary overrides and canonical Record edits; required default View.
 - **Query safety:** Visual/SQL modes are separate; SQL restricted to approved read-only operations; materialization creates an explicit Table snapshot.

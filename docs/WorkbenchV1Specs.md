@@ -165,7 +165,11 @@ A resource-transfer `.wkbn` is a valid Workbench database containing selected re
 Coherent semantic operations drive Undo/Redo and inspectable Record/schema/resource History. Bulk imports and Automations have meaningful attribution and transaction boundaries. Restoration uses Core rules and can surface conflicts. History is distinct from snapshots and Trash.
 
 ### 8C. Trash and deletion
-Deleted resources and owned content are recoverable through Trash where applicable; permanent deletion is explicit. Table deletion cascades to its owned Fields/Records/Views and contextual Notes; linked target Records do not cascade merely through relationships. Removing a Collection moves contained resources to root unless explicitly included in a broader delete. **No separate Archive lifecycle**; inactive content can use Collections and Explorer visibility. Restoration handles conflicts and dependencies.
+Deleted resources and owned content are recoverable through Trash where applicable; permanent deletion is explicit. Table deletion cascades to its owned Fields/Records/Views and contextual Notes; linked target Records do not cascade merely through relationships. 
+
+Deleting a Collection moves the Collection and all currently contained resources, including their genuinely owned descendants, to Trash as one recoverable operation. The operation requires an impact preview identifying affected resources and dependencies. Restoration preserves UUIDs and original Collection placement, subject to Core validation. Permanent deletion remains explicit. 
+
+**No separate Archive lifecycle**; inactive content can use Collections and Explorer visibility. Restoration handles conflicts and dependencies.
 
 ### 8D. Backups and recovery
 Support consistent SQLite backups while open, recovery checkpoints, configurable retention, safe restore, integrity diagnostics, and crash-safe interrupted-operation behavior. Backups are distinct from History, Undo/Redo, and Trash.

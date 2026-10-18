@@ -290,7 +290,11 @@ Record domain-level changes rather than raw SQL mutations. Commit History atomic
 
 ### 11.2 Trash and ownership
 
-Trash preserves recoverable deleted resources and genuinely owned descendants. A Table deletion includes its Fields/Records/Views; relationships use Preserve/Clear/Restrict and do not cascade to linked target Records. A Collection deletion relocates its contained resources to root unless the user explicitly selects additional deletion. Notes follow target lifecycle. No separate Archive state; use Collections and Explorer visibility for inactive resources.
+Trash preserves recoverable deleted resources and genuinely owned descendants. A Table deletion includes its Fields/Records/Views; relationships use Preserve/Clear/Restrict and do not cascade to linked target Records. 
+
+The Core should determine the affected resource set, validate dependencies, and move the Collection and contained resources to Trash transactionally. Restoration should restore the group consistently rather than creating partially restored Collections.
+
+No separate Archive state; use Collections and Explorer visibility for inactive resources.
 
 ### 11.3 Backups and recovery
 
