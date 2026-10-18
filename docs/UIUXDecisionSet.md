@@ -135,14 +135,14 @@ This document consolidates the approved UI/UX decisions from the 12-system desig
 1. **Files navigation.** Root Files section with type/storage/usage grouping, filtering, sorting; grouping is presentation only.
 2. **Storage mode.** Explicit embedded versus external File choice, status badges, relink, and conversion.
 3. **File editor/preview.** Markdown live/source, text/JSON/CSV, images/PDF previews, supported Office handling or external fallback; Core-backed edits and drafts.
-4. **Attachments.** Reusable picker to attach existing or add new File; UUID identity, usage/backlinks; detach does not delete File.
+4. **Files and attachments.** Reusable picker to attach existing or add new File. Files remain Workbench-root resources with stable UUIDs. Independent Files can exist without attachments. Attachment associations reference existing Files without duplicating content, and a File may be associated with multiple resources. Ordinary detachment does not delete the File. When deleting a resource, a **Preserve attachments** checkbox is shown unchecked by default in the deletion impact preview. By default, attachment-managed Files exclusively associated with the full deletion set are also moved to Trash. Checking Preserve attachments retains those Files independently. Files referenced by surviving resources and intentionally independent Files are preserved. Restore and Undo preserve applicable File identities and attachment associations.
 5. **File operations/transfer.** Guided operations, `.wkbn` native transfers, explicit external-File inclusion choices and Include All; no second native package format.
 6. **Note editor.** Markdown Live Preview/Source, shortcuts, autosave, drafts, expandable editor.
 7. **Note ownership.** **One optional Markdown Note per supported parent**: Workbench, Collection, Table, Field, Record, View, Query, Dashboard, Automation, File. Parent-owned UUID lifecycle and uniqueness; no standalone Note lists, pinning, ordering, duplication, or reassignment. Headings, collapsible outline, and checklists are allowed. Markdown Files remain separate root Files.
 8. **Note placement.** Contextual Right Panel Note with outline; optional full editor tab.
-9. **Note links.** Standard hyperlinks and UUID-based internal resource links with repair; links do not confer ownership.
+9.  **Note links.** Standard hyperlinks and UUID-based internal resource links with repair; links do not confer ownership.
 10. **Note search/history.** Heading-aware full-text search, History/Undo, drafts, asynchronous indexing.
-11. **Automation creation.** Guided templates or blank definition, resource preselection, disabled until valid/authorized; drafts and safe duplication.
+11. **Automation creation.** Guided templates or blank definition, resource pre-selection, disabled until valid/authorized; drafts and safe duplication.
 12. **Automation builder.** Declarative vertical trigger/condition/action blocks, AND/OR, branches, mappings, contextual Right Panel; no scripts.
 13. **Triggers.** Event, scheduled, and manual; timezone, recurrence, next run, Core-running-only schedules, missed-run policy, loop safeguards.
 14. **Testing.** Dry-run impact preview without canonical mutations; separate manual Run; Operations/logs.

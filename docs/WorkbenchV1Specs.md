@@ -141,6 +141,8 @@ Support dependency-aware resource copy/export/import, identity remapping, associ
 ### 7A. First-class Files
 Files are workbench-root resources with UUIDs, metadata, rename/replace/delete operations, previews, and built-in editors for supported text/Markdown and structured formats. Preview images, PDFs, and other supported media; opening externally is available when appropriate. Attachment Fields refer to File UUIDs rather than duplicating bytes.
 
+Files may be independent Workbench assets or attachment-managed assets referenced by one or more resources. Attachment associations use File UUIDs and do not duplicate File content. Ordinary detachment preserves the underlying File. Resource deletion offers a **Preserve attachments** checkbox, unchecked by default. If unchecked, attachment-managed Files referenced exclusively by the full deletion set are moved to Trash; if checked, they are preserved as independent Files. Shared Files referenced by surviving resources and intentionally independent Files are always preserved.
+
 ### 7B. Managed and external Files
 Managed File bytes live within `.wkbn` through the logical File Store. External File resources retain paths/references and clearly show missing/inaccessible targets. Replacing content preserves the File resource UUID and appropriate dependencies. Embedded content is never implicitly executed.
 
@@ -168,6 +170,8 @@ Coherent semantic operations drive Undo/Redo and inspectable Record/schema/resou
 Deleted resources and owned content are recoverable through Trash where applicable; permanent deletion is explicit. Table deletion cascades to its owned Fields/Records/Views and contextual Notes; linked target Records do not cascade merely through relationships. 
 
 Deleting a Collection moves the Collection and all currently contained resources, including their genuinely owned descendants, to Trash as one recoverable operation. The operation requires an impact preview identifying affected resources and dependencies. Restoration preserves UUIDs and original Collection placement, subject to Core validation. Permanent deletion remains explicit. 
+
+Deletion impact previews include attachment handling. The **Preserve attachments** checkbox defaults to unchecked. Attachment exclusivity is evaluated across the complete transactional deletion set, including cascading Collection and owned-resource deletions. Exclusively associated attachment-managed Files are included in Trash unless preservation is selected. Files referenced by surviving resources and intentionally independent Files are excluded from automatic attachment cleanup. Undo and restoration recover affected Files and associations consistently.
 
 **No separate Archive lifecycle**; inactive content can use Collections and Explorer visibility. Restoration handles conflicts and dependencies.
 

@@ -296,6 +296,8 @@ Trash preserves recoverable deleted resources and genuinely owned descendants. A
 
 The Core should determine the affected resource set, validate dependencies, and move the Collection and contained resources to Trash transactionally. Restoration should restore the group consistently rather than creating partially restored Collections.
 
+Resource deletion computes attachment cleanup across the complete deletion set. The UI presents a **Preserve attachments** checkbox, unchecked by default. When unchecked, exclusively associated attachment-managed Files are included in the transactional Trash operation. Shared Files referenced outside the deletion set and intentionally independent Files remain untouched. When checked, eligible Files are retained independently. Ordinary detachment never triggers this cleanup. Undo and restoration preserve File UUIDs and applicable attachment relationships.
+
 No separate Archive state; use Collections and Explorer visibility for inactive resources.
 
 ### 11.3 Backups and recovery
